@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisassembleNet-3D | Spatial AI Remanufacturing Studio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        zinc: {
+                            850: '#141417',
+                            900: '#0e0e11',
+                            950: '#08080a',
+                        },
+                        brand: {
+                            50: '#f0f9ff',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Sarabun', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', 'Sarabun', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Modern Studio UI Utilities */
+        .studio-panel {
+            background: rgba(14, 14, 17, 0.78);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        
+        .studio-card {
+            background: rgba(24, 24, 27, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .studio-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(24, 24, 27, 0.7);
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 2px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+        /* Range Slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #27272a;
+            height: 4px;
+            border-radius: 2px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+            transition: transform 0.1s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen overflow-hidden flex flex-col antialiased selection:bg-cyan-500/20">
+
+    <!-- Top Bar: Industrial Precision Header -->
+    <header class="h-14 border-b border-white/[0.08] bg-zinc-950/80 backdrop-blur-xl px-5 flex items-center justify-between z-30 select-none">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-md bg-zinc-900 border border-white/10 flex items-center justify-center shadow-inner">
+                    <i data-lucide="layers" class="w-4 h-4 text-cyan-400"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold text-sm tracking-tight text-white">DisassembleNet<span class="text-cyan-400">.3D</span></span>
+                        <span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-zinc-900 text-zinc-400 border border-white/10">v2.4</span>
+                    </div>
+                </div>
+            </div>
+            <div class="h-4 w-[1px] bg-white/10 hidden sm:block"></div>
+            <p class="text-xs text-zinc-400 hidden sm:block font-normal">Spatial AI Cognitive Studio for Mechanical Remanufacturing</p>
+        </div>
+
+        <!-- Telemetry Status Pills -->
+        <div class="hidden lg:flex items-center space-x-3 text-xs font-mono">
+            <div class="flex items-center space-x-2 bg-zinc-900/90 px-2.5 py-1 rounded-md border border-white/[0.06]">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-zinc-400 text-[11px]">POMDP:</span>
+                <span class="text-zinc-200 font-medium text-[11px]">0.04s</span>
+            </div>
+            <div class="flex items-center space-x-2 bg-zinc-900/90 px-2.5 py-1 rounded-md border border-white/[0.06]">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                <span class="text-zinc-400 text-[11px]">Tactile Override:</span>
+                <span class="text-zinc-200 font-medium text-[11px]">ARMED</span>
+            </div>
+            <div class="flex items-center space-x-2 bg-zinc-900/90 px-2.5 py-1 rounded-md border border-white/[0.06]">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                <span class="text-zinc-400 text-[11px]">Battery Interlock:</span>
+                <span class="text-zinc-200 font-medium text-[11px]">&lt;50mm CUTOFF</span>
+            </div>
+        </div>
+
+        <!-- Playback Actions -->
+        <div class="flex items-center space-x-2">
+            <button onclick="triggerAutoPlay()" id="playBtn" class="px-3.5 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-semibold rounded-md shadow-sm transition-all flex items-center space-x-1.5 active:scale-95">
+                <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+                <span id="playBtnText">Auto Sequence</span>
+            </button>
+            <button onclick="resetAssembly()" title="Reset to Original" class="p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-md border border-white/10 transition-all active:scale-95">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Studio Workspace -->
+    <div class="flex-1 flex overflow-hidden relative">
+        
+        <!-- Left Sidebar: Disassembly Sequence & DAG Graph -->
+        <aside class="w-80 border-r border-white/[0.08] studio-panel flex flex-col z-20 custom-scrollbar overflow-y-auto select-none">
+            <div class="p-3.5 border-b border-white/[0.08] flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-bold text-zinc-200 tracking-wide uppercase flex items-center space-x-1.5">
+                        <i data-lucide="network" class="w-3.5 h-3.5 text-cyan-400"></i>
+                        <span>Disassembly Plan (DAG)</span>
+                    </div>
+                    <p class="text-[11px] text-zinc-400 mt-0.5 font-mono">POMDP Layer-by-Layer Marching</p>
+                </div>
+                <span class="text-[10px] font-mono bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded border border-white/10">6 Steps</span>
+            </div>
+
+            <!-- Steps List Container -->
+            <div class="p-2.5 space-y-1.5 flex-1" id="stepList">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Real-time Force & Thermal Diagnostics -->
+            <div class="p-3.5 border-t border-white/[0.08] bg-zinc-950/60 space-y-3">
+                <div>
+                    <div class="flex items-center justify-between text-[11px] font-mono">
+                        <span class="text-zinc-400">End-Effector Force (F_z)</span>
+                        <span class="text-cyan-400 font-bold" id="forceDisplay">1.4 N / 8.5 N</span>
+                    </div>
+                    <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden mt-1.5">
+                        <div id="forceBar" class="bg-cyan-500 h-full w-[16%] transition-all duration-300"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between text-[11px] font-mono">
+                        <span class="text-zinc-400">Battery Thermal Zone</span>
+                        <span class="text-emerald-400 font-bold" id="tempDisplay">28.5 °C (Safe)</span>
+                    </div>
+                    <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden mt-1.5">
+                        <div id="tempBar" class="bg-emerald-500 h-full w-[20%] transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: 3D Viewport Studio -->
+        <main class="flex-1 relative bg-zinc-950 flex flex-col overflow-hidden">
+            <!-- 3D Canvas -->
+            <div id="canvasContainer" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+            <!-- Viewport Control Floating Pill -->
+            <div class="absolute top-4 left-4 flex items-center space-x-1.5 bg-zinc-900/90 backdrop-blur-md p-1 rounded-lg border border-white/10 z-10 select-none shadow-xl">
+                <button onclick="setCameraView('iso')" class="px-2.5 py-1 text-xs font-mono rounded hover:bg-zinc-800 text-zinc-300 transition-all">ISO</button>
+                <button onclick="setCameraView('top')" class="px-2.5 py-1 text-xs font-mono rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">TOP</button>
+                <button onclick="setCameraView('front')" class="px-2.5 py-1 text-xs font-mono rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">FRONT</button>
+                <div class="w-[1px] h-3 bg-white/10 mx-1"></div>
+                <button onclick="toggleWireframe()" id="wireframeBtn" title="Toggle Wireframe" class="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">
+                    <i data-lucide="box" class="w-3.5 h-3.5"></i>
+                </button>
+                <button onclick="toggleXray()" id="xrayBtn" title="Toggle X-Ray / Transparent" class="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+
+            <!-- Explode Slider Bar -->
+            <div class="absolute top-4 right-4 flex items-center space-x-3 bg-zinc-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-lg border border-white/10 z-10 select-none shadow-xl">
+                <span class="text-[11px] font-mono text-zinc-400">Explode</span>
+                <input type="range" id="explodeSlider" min="0" max="100" value="0" class="w-24" oninput="onExplodeSlider(this.value)">
+                <span class="text-[11px] font-mono text-cyan-400 font-bold w-7" id="explodePercent">0%</span>
+            </div>
+
+            <!-- Floating Active Step Card (Bottom Left) -->
+            <div class="absolute bottom-5 left-5 right-5 sm:right-auto sm:w-[440px] studio-panel rounded-xl p-4 shadow-2xl z-10 border border-white/[0.08]">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-1.5 py-0.5 text-[10px] font-mono font-bold rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30" id="currentStepBadge">STEP 1 / 6</span>
+                            <h3 class="font-bold text-sm text-zinc-100" id="currentStepTitle">ฝาครอบล่าง (Bottom Casing)</h3>
+                        </div>
+                        <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed" id="currentStepDesc">คลายน็อต Torx M2 6 จุด ด้วยกลยุทธ์ Wiggle & Reverse ป้องกันเกลียวหวาน</p>
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-3 border-t border-white/[0.08] grid grid-cols-3 gap-2 text-center text-xs font-mono">
+                    <div class="bg-zinc-900/60 p-2 rounded border border-white/[0.04]">
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wider">Toolhead</div>
+                        <div class="text-zinc-200 font-semibold mt-0.5 text-[11px]" id="currentTool">Torx Bit M2</div>
+                    </div>
+                    <div class="bg-zinc-900/60 p-2 rounded border border-white/[0.04]">
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wider">Strategy</div>
+                        <div class="text-cyan-400 font-semibold mt-0.5 text-[11px]" id="currentStrategy">Wiggle & Reverse</div>
+                    </div>
+                    <div class="bg-zinc-900/60 p-2 rounded border border-white/[0.04]">
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wider">Integrity</div>
+                        <div class="text-emerald-400 font-semibold mt-0.5 text-[11px]" id="currentIntegrity">100% Intact</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar: Circular Economy & Industrial Export -->
+        <aside class="w-80 border-l border-white/[0.08] studio-panel flex flex-col z-20 custom-scrollbar overflow-y-auto p-4 space-y-4 select-none">
+            <div>
+                <div class="text-xs font-bold text-zinc-200 tracking-wide uppercase flex items-center space-x-1.5">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-cyan-400"></i>
+                    <span>Circularity & LCA Metrics</span>
+                </div>
+                <p class="text-[11px] text-zinc-400 mt-0.5 font-mono">ISO 14044 Life Cycle Assessment</p>
+            </div>
+
+            <!-- Metrics Cards -->
+            <div class="space-y-2">
+                <div class="p-3 studio-card rounded-lg">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-zinc-400">Economic Value Harvested:</span>
+                        <span class="text-emerald-400 font-mono font-bold text-sm" id="valRetained">฿ 560.00</span>
+                    </div>
+                    <div class="text-[11px] text-zinc-500 mt-1 flex justify-between font-mono">
+                        <span>Scrap Value: ฿ 120.00</span>
+                        <span class="text-emerald-400 font-semibold">+366% Reman Gain</span>
+                    </div>
+                </div>
+
+                <div class="p-3 studio-card rounded-lg">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-zinc-400">Carbon Avoided (CO2e):</span>
+                        <span class="text-cyan-400 font-mono font-bold text-sm">14.32 kg</span>
+                    </div>
+                    <p class="text-[11px] text-zinc-500 mt-1 font-mono">Equivalent to 62 km driving offset</p>
+                </div>
+
+                <div class="p-3 studio-card rounded-lg">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-zinc-400">Material Circularity (MCI):</span>
+                        <span class="text-zinc-200 font-mono font-bold text-sm">0.89 / 1.00</span>
+                    </div>
+                    <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden mt-2">
+                        <div class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full w-[89%]"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Harvested Components List -->
+            <div class="pt-3 border-t border-white/[0.08] space-y-2">
+                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono">Recovered Parts</span>
+                <div class="space-y-1 text-xs font-mono">
+                    <div class="p-2 rounded bg-zinc-900/50 border border-white/[0.04] flex items-center justify-between">
+                        <span class="text-zinc-300">PCB Motherboard (SoC)</span>
+                        <span class="text-emerald-400 text-[11px] font-bold">READY</span>
+                    </div>
+                    <div class="p-2 rounded bg-zinc-900/50 border border-white/[0.04] flex items-center justify-between">
+                        <span class="text-zinc-300">Neodymium Cooling Fan</span>
+                        <span class="text-emerald-400 text-[11px] font-bold">READY</span>
+                    </div>
+                    <div class="p-2 rounded bg-zinc-900/50 border border-white/[0.04] flex items-center justify-between">
+                        <span class="text-zinc-300">Li-ion Battery 54Wh</span>
+                        <span class="text-amber-400 text-[11px] font-bold">COLD-PEELED</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Industrial Robot & AR Export -->
+            <div class="pt-3 border-t border-white/[0.08] space-y-2">
+                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono">Industrial Pipeline</span>
+                <button onclick="alert('Exporting ROS MoveIt trajectory (trajectory_plan.yaml) and G-Code coordinates...')" class="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-zinc-200 rounded border border-white/10 flex items-center justify-center space-x-2 transition-all active:scale-95">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <span>Export ROS MoveIt Plan</span>
+                </button>
+                <button onclick="alert('Generating WebAR Floor Tracking session for tablet operator...')" class="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-cyan-400 rounded border border-cyan-500/30 flex items-center justify-center space-x-2 transition-all active:scale-95">
+                    <i data-lucide="scan" class="w-3.5 h-3.5"></i>
+                    <span>Launch WebAR Guide</span>
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Three.js Interactive Engine Script -->
+    <script>
+        const stepsData = [
+            {
+                id: 1,
+                name: "1. ฝาครอบล่าง (Bottom Casing)",
+                desc: "คลายน็อต Torx M2 6 จุด ด้วยกลยุทธ์ Wiggle & Reverse ป้องกันเกลียวหวาน",
+                part: "casing_bottom",
+                tool: "Torx Bit M2",
+                strategy: "Wiggle & Reverse",
+                integrity: "100%",
+                force: "1.4 N",
+                forcePercent: "16%",
+                temp: "28.5 °C",
+                tempPercent: "20%",
+                explodeOffset: { x: 0, y: -2.2, z: 0 }
+            },
+            {
+                id: 2,
+                name: "2. แบตเตอรี่ Li-ion (Battery Pack)",
+                desc: "ตรวจพบ Battery Sentinel: ตัดระบบความร้อน! ใช้ Cold Micro-Shear 15° ลอกแถบกาว",
+                part: "battery",
+                tool: "Cold Suction & Shear",
+                strategy: "Battery Safety Interlock",
+                integrity: "100% (No Puncture)",
+                force: "2.8 N",
+                forcePercent: "32%",
+                temp: "29.0 °C (Cold)",
+                tempPercent: "22%",
+                explodeOffset: { x: -2.0, y: -0.8, z: 1.0 }
+            },
+            {
+                id: 3,
+                name: "3. พัดลมระบายความร้อน (Cooling Fan)",
+                desc: "ปลดขั้วต่อสายไฟ 4-pin และสกรูยึด 2 จุด ดึงใบพัดและแม่เหล็ก Neodymium ออก",
+                part: "fan",
+                tool: "Soft Gripper + Bit",
+                strategy: "Rare Earth Harvest",
+                integrity: "100%",
+                force: "1.1 N",
+                forcePercent: "12%",
+                temp: "28.5 °C",
+                tempPercent: "20%",
+                explodeOffset: { x: 2.0, y: 1.2, z: -1.2 }
+            },
+            {
+                id: 4,
+                name: "4. ฮีตซิงก์ท่อทองแดง (Copper Heat Pipe)",
+                desc: "คลายสปริงยึด CPU/GPU 4 ตำแหน่งในแนวทแยง (Cross-pattern) ป้องกัน Die แตก",
+                part: "heatsink",
+                tool: "Spring Tension Driver",
+                strategy: "Cross-Pattern Relief",
+                integrity: "100%",
+                force: "1.8 N",
+                forcePercent: "21%",
+                temp: "28.5 °C",
+                tempPercent: "20%",
+                explodeOffset: { x: 0, y: 1.5, z: -1.2 }
+            },
+            {
+                id: 5,
+                name: "5. เมนบอร์ดหลัก (Main PCB Motherboard)",
+                desc: "ปลดสายแพ Display/Keyboard ยกแผงวงจรพร้อมชิป SoC และ RAM ออกโดยไม่ดัดงอ",
+                part: "pcb",
+                tool: "Dual Vacuum Array",
+                strategy: "Zero-Bending Lift",
+                integrity: "100%",
+                force: "0.9 N",
+                forcePercent: "10%",
+                temp: "28.5 °C",
+                tempPercent: "20%",
+                explodeOffset: { x: 0, y: 0.7, z: 0 }
+            },
+            {
+                id: 6,
+                name: "6. ฝาครอบบน & คีย์บอร์ด (Top Casing & Frame)",
+                desc: "ปลดสลัก Snap-fits รอบขอบตัวเครื่องด้วยแรงดันกดต่ำกว่าขีดจำกัดความเค้นคราก",
+                part: "casing_top",
+                tool: "Compliant Soft Pry",
+                strategy: "Stress-Bound Release",
+                integrity: "100%",
+                force: "2.1 N",
+                forcePercent: "24%",
+                temp: "28.5 °C",
+                tempPercent: "20%",
+                explodeOffset: { x: 0, y: 2.5, z: 0 }
+            }
+        ];
+
+        let scene, camera, renderer, controls;
+        let parts = {};
+        let currentStepIndex = 0;
+        let isAutoPlaying = false;
+        let isWireframe = false;
+        let isXray = false;
+        let explodeFactor = 0; // 0 to 1
+
+        function initThree() {
+            const container = document.getElementById('canvasContainer');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x08080a);
+
+            camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(6, 4.5, 7.5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.1;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 + 0.1;
+            controls.minDistance = 3;
+            controls.maxDistance = 20;
+
+            // Studio Lighting Setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+            scene.add(ambientLight);
+
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.8);
+            mainLight.position.set(6, 12, 8);
+            mainLight.castShadow = true;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
+            scene.add(mainLight);
+
+            const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.7);
+            fillLight.position.set(-6, 4, -4);
+            scene.add(fillLight);
+
+            const rimLight = new THREE.DirectionalLight(0x60a5fa, 0.5);
+            rimLight.position.set(0, -6, -4);
+            scene.add(rimLight);
+
+            // Floor Grid & Shadow Receiver
+            const gridHelper = new THREE.GridHelper(16, 24, 0x27272a, 0x18181b);
+            gridHelper.position.y = -2;
+            scene.add(gridHelper);
+
+            const shadowPlaneGeo = new THREE.PlaneGeometry(16, 16);
+            const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.35 });
+            const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
+            shadowPlane.rotation.x = -Math.PI / 2;
+            shadowPlane.position.y = -2.001;
+            shadowPlane.receiveShadow = true;
+            scene.add(shadowPlane);
+
+            createCADModels();
+            renderStepList();
+            setupRaycaster();
+            animate();
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        // Create Detailed PBR CAD Assembly
+        function createCADModels() {
+            const assembly = new THREE.Group();
+
+            // 1. Bottom Casing (Dark Anodized Aluminum)
+            const botGeo = new THREE.BoxGeometry(4.4, 0.18, 3.0);
+            const botMat = new THREE.MeshStandardMaterial({ 
+                color: 0x27272a, 
+                metalness: 0.6, 
+                roughness: 0.35 
+            });
+            const botMesh = new THREE.Mesh(botGeo, botMat);
+            botMesh.position.y = -0.45;
+            botMesh.castShadow = true;
+            botMesh.receiveShadow = true;
+            parts['casing_bottom'] = { mesh: botMesh, originalPos: botMesh.position.clone(), targetPos: botMesh.position.clone(), mat: botMat };
+            assembly.add(botMesh);
+
+            // 2. Battery Pack (Li-ion Pouch Cell with dark foil)
+            const batGeo = new THREE.BoxGeometry(2.3, 0.1, 1.2);
+            const batMat = new THREE.MeshStandardMaterial({ 
+                color: 0x18181b, 
+                metalness: 0.8, 
+                roughness: 0.25 
+            });
+            const batMesh = new THREE.Mesh(batGeo, batMat);
+            batMesh.position.set(-0.85, -0.28, 0.65);
+            batMesh.castShadow = true;
+            parts['battery'] = { mesh: batMesh, originalPos: batMesh.position.clone(), targetPos: batMesh.position.clone(), mat: batMat };
+            assembly.add(batMesh);
+
+            // 3. Cooling Fan (Impeller & Housing)
+            const fanGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.14, 32);
+            const fanMat = new THREE.MeshStandardMaterial({ 
+                color: 0xd97706, 
+                metalness: 0.4, 
+                roughness: 0.3 
+            });
+            const fanMesh = new THREE.Mesh(fanGeo, fanMat);
+            fanMesh.position.set(1.4, -0.26, -0.75);
+            fanMesh.castShadow = true;
+            parts['fan'] = { mesh: fanMesh, originalPos: fanMesh.position.clone(), targetPos: fanMesh.position.clone(), mat: fanMat };
+            assembly.add(fanMesh);
+
+            // 4. Copper Heat Sink & Sintered Heat Pipe
+            const heatGeo = new THREE.BoxGeometry(1.8, 0.08, 0.9);
+            const heatMat = new THREE.MeshStandardMaterial({ 
+                color: 0xb45309, 
+                metalness: 0.95, 
+                roughness: 0.15 
+            });
+            const heatMesh = new THREE.Mesh(heatGeo, heatMat);
+            heatMesh.position.set(0.3, -0.25, -0.65);
+            heatMesh.castShadow = true;
+            parts['heatsink'] = { mesh: heatMesh, originalPos: heatMesh.position.clone(), targetPos: heatMesh.position.clone(), mat: heatMat };
+            assembly.add(heatMesh);
+
+            // 5. Main PCB Motherboard (Emerald Solder Mask + Chips)
+            const pcbGroup = new THREE.Group();
+            const pcbBaseGeo = new THREE.BoxGeometry(4.0, 0.06, 2.6);
+            const pcbBaseMat = new THREE.MeshStandardMaterial({ 
+                color: 0x064e3b, 
+                metalness: 0.2, 
+                roughness: 0.6 
+            });
+            const pcbBase = new THREE.Mesh(pcbBaseGeo, pcbBaseMat);
+            pcbBase.castShadow = true;
+            pcbGroup.add(pcbBase);
+
+            // SoC Processor Die
+            const socGeo = new THREE.BoxGeometry(0.7, 0.03, 0.7);
+            const socMat = new THREE.MeshStandardMaterial({ color: 0x09090b, metalness: 0.9, roughness: 0.1 });
+            const socMesh = new THREE.Mesh(socGeo, socMat);
+            socMesh.position.set(0.3, 0.04, -0.65);
+            pcbGroup.add(socMesh);
+
+            pcbGroup.position.y = -0.32;
+            parts['pcb'] = { mesh: pcbGroup, originalPos: pcbGroup.position.clone(), targetPos: pcbGroup.position.clone(), mat: pcbBaseMat };
+            assembly.add(pcbGroup);
+
+            // 6. Top Casing & Keyboard Assembly
+            const topGeo = new THREE.BoxGeometry(4.4, 0.16, 3.0);
+            const topMat = new THREE.MeshStandardMaterial({ 
+                color: 0x1e1e24, 
+                metalness: 0.5, 
+                roughness: 0.4 
+            });
+            const topMesh = new THREE.Mesh(topGeo, topMat);
+            topMesh.position.y = -0.12;
+            topMesh.castShadow = true;
+            parts['casing_top'] = { mesh: topMesh, originalPos: topMesh.position.clone(), targetPos: topMesh.position.clone(), mat: topMat };
+            assembly.add(topMesh);
+
+            scene.add(assembly);
+        }
+
+        function renderStepList() {
+            const list = document.getElementById('stepList');
+            list.innerHTML = '';
+            stepsData.forEach((s, idx) => {
+                const isActive = idx === currentStepIndex;
+                const isPast = idx < currentStepIndex;
+                const item = document.createElement('div');
+                item.className = `p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
+                    isActive 
+                        ? 'bg-cyan-500/10 border-cyan-500/50 shadow-sm' 
+                        : isPast 
+                            ? 'bg-zinc-900/30 border-white/[0.04] opacity-50 hover:opacity-80' 
+                            : 'bg-zinc-900/60 border-white/[0.05] hover:border-white/10'
+                }`;
+                item.onclick = () => selectStep(idx);
+                item.innerHTML = `
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-medium ${isActive ? 'text-cyan-400 font-bold' : 'text-zinc-300'}">${s.name}</span>
+                        <span class="text-[10px] font-mono ${isPast ? 'text-emerald-400' : isActive ? 'text-cyan-400 font-bold' : 'text-zinc-500'}">
+                            ${isPast ? 'DISASSEMBLED' : isActive ? 'ACTIVE' : 'QUEUED'}
+                        </span>
+                    </div>
+                    <div class="text-[11px] text-zinc-400 mt-1 line-clamp-1">${s.desc}</div>
+                `;
+                list.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
+        function selectStep(index) {
+            currentStepIndex = index;
+            const data = stepsData[index];
+
+            // Update UI Details
+            document.getElementById('currentStepBadge').innerText = `STEP ${data.id} / 6`;
+            document.getElementById('currentStepTitle').innerText = data.name.split('. ')[1];
+            document.getElementById('currentStepDesc').innerText = data.desc;
+            document.getElementById('currentTool').innerText = data.tool;
+            document.getElementById('currentStrategy').innerText = data.strategy;
+            document.getElementById('currentIntegrity').innerText = data.integrity;
+
+            document.getElementById('forceDisplay').innerText = `${data.force} / 8.5 N`;
+            document.getElementById('forceBar').style.width = data.forcePercent;
+            document.getElementById('tempDisplay').innerText = data.temp;
+            document.getElementById('tempBar').style.width = data.tempPercent;
+
+            // Set Smooth Target Positions
+            stepsData.forEach((s, idx) => {
+                const partObj = parts[s.part];
+                if (partObj) {
+                    if (idx <= index) {
+                        partObj.targetPos.set(
+                            partObj.originalPos.x + s.explodeOffset.x,
+                            partObj.originalPos.y + s.explodeOffset.y,
+                            partObj.originalPos.z + s.explodeOffset.z
+                        );
+                    } else {
+                        partObj.targetPos.copy(partObj.originalPos);
+                    }
+                }
+            });
+
+            renderStepList();
+        }
+
+        function onExplodeSlider(val) {
+            explodeFactor = val / 100;
+            document.getElementById('explodePercent').innerText = `${val}%`;
+
+            stepsData.forEach((s) => {
+                const partObj = parts[s.part];
+                if (partObj) {
+                    partObj.targetPos.set(
+                        partObj.originalPos.x + s.explodeOffset.x * explodeFactor,
+                        partObj.originalPos.y + s.explodeOffset.y * explodeFactor,
+                        partObj.originalPos.z + s.explodeOffset.z * explodeFactor
+                    );
+                }
+            });
+        }
+
+        function triggerAutoPlay() {
+            if (isAutoPlaying) return;
+            isAutoPlaying = true;
+            document.getElementById('playBtnText').innerText = "Running...";
+            document.getElementById('playBtn').classList.add('opacity-50', 'pointer-events-none');
+
+            let i = 0;
+            const interval = setInterval(() => {
+                selectStep(i);
+                document.getElementById('explodeSlider').value = Math.round(((i + 1) / stepsData.length) * 100);
+                document.getElementById('explodePercent').innerText = `${document.getElementById('explodeSlider').value}%`;
+                i++;
+                if (i >= stepsData.length) {
+                    clearInterval(interval);
+                    isAutoPlaying = false;
+                    document.getElementById('playBtnText').innerText = "Auto Sequence";
+                    document.getElementById('playBtn').classList.remove('opacity-50', 'pointer-events-none');
+                }
+            }, 1200);
+        }
+
+        function resetAssembly() {
+            currentStepIndex = 0;
+            document.getElementById('explodeSlider').value = 0;
+            document.getElementById('explodePercent').innerText = "0%";
+            stepsData.forEach(s => {
+                if (parts[s.part]) {
+                    parts[s.part].targetPos.copy(parts[s.part].originalPos);
+                }
+            });
+            selectStep(0);
+        }
+
+        function toggleWireframe() {
+            isWireframe = !isWireframe;
+            Object.values(parts).forEach(p => {
+                if (p.mat) p.mat.wireframe = isWireframe;
+            });
+            document.getElementById('wireframeBtn').classList.toggle('text-cyan-400', isWireframe);
+        }
+
+        function toggleXray() {
+            isXray = !isXray;
+            Object.values(parts).forEach(p => {
+                if (p.mat) {
+                    p.mat.transparent = isXray;
+                    p.mat.opacity = isXray ? 0.35 : 1.0;
+                }
+            });
+            document.getElementById('xrayBtn').classList.toggle('text-cyan-400', isXray);
+        }
+
+        function setCameraView(view) {
+            if (view === 'top') camera.position.set(0, 9, 0.1);
+            if (view === 'iso') camera.position.set(6, 4.5, 7.5);
+            if (view === 'front') camera.position.set(0, 0, 8.5);
+            controls.update();
+        }
+
+        // Raycaster for Interactive 3D Clicking
+        function setupRaycaster() {
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            window.addEventListener('click', (event) => {
+                const container = document.getElementById('canvasContainer');
+                const rect = container.getBoundingClientRect();
+                if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) return;
+
+                mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const meshes = Object.values(parts).map(p => p.mesh);
+                const intersects = raycaster.intersectObjects(meshes, true);
+
+                if (intersects.length > 0) {
+                    let hitMesh = intersects[0].object;
+                    while (hitMesh.parent && hitMesh.parent !== scene && !Object.keys(parts).some(k => parts[k].mesh === hitMesh)) {
+                        hitMesh = hitMesh.parent;
+                    }
+                    const hitKey = Object.keys(parts).find(k => parts[k].mesh === hitMesh);
+                    if (hitKey) {
+                        const stepIdx = stepsData.findIndex(s => s.part === hitKey);
+                        if (stepIdx !== -1) selectStep(stepIdx);
+                    }
+                }
+            });
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvasContainer');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // Animation Loop with Smooth Interpolation (Lerp)
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+
+            // Smoothly glide parts to target positions
+            Object.values(parts).forEach(p => {
+                p.mesh.position.lerp(p.targetPos, 0.08);
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = () => {
+            initThree();
+            lucide.createIcons();
+            selectStep(0);
+        };
+    </script>
+</body>
+</html>
