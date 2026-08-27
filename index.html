@@ -1,568 +1,1102 @@
-<!DOCTYPE html>
-<html lang="th" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!doctype html>
+<html lang="th" class="dark" style="height:100%">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>DisassembleNet-3D | Spatial AI Remanufacturing Studio</title>
-    <script src="https://cdn.tailwindcss.com"><\/script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        zinc: { 850: '#141417', 900: '#0e0e11', 950: '#08080a' },
-                        brand: { 50: '#f0f9ff', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7' }
-                    },
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'Sarabun', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    }
-                }
-            }
-        }
-    <\/script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>
-    <script src="https://unpkg.com/lucide@latest"><\/script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              zinc: { 850: '#141417', 900: '#0e0e11', 950: '#08080a' },
+              brand: { 50: '#f0f9ff', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7' },
+            },
+            fontFamily: {
+              sans: ['Plus Jakarta Sans', 'Sarabun', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        *{box-sizing:border-box}
-        html,body{height:100%;margin:0;padding:0}
-        body{font-family:'Plus Jakarta Sans','Sarabun',sans-serif;background:#08080a;color:#f4f4f5;display:flex;flex-direction:column;overflow:hidden}
-        .font-mono{font-family:'JetBrains Mono',monospace}
-        .studio-panel{background:rgba(14,14,17,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.07)}
-        .studio-card{background:rgba(24,24,27,.45);border:1px solid rgba(255,255,255,.05);transition:all .2s cubic-bezier(.16,1,.3,1)}
-        .studio-card:hover{border-color:rgba(255,255,255,.15);background:rgba(24,24,27,.7)}
-        .custom-scrollbar::-webkit-scrollbar{width:4px}
-        .custom-scrollbar::-webkit-scrollbar-track{background:transparent}
-        .custom-scrollbar::-webkit-scrollbar-thumb{background:#27272a;border-radius:2px}
-        input[type=range]{-webkit-appearance:none;background:#27272a;height:4px;border-radius:2px;cursor:pointer}
-        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;height:18px;width:18px;border-radius:50%;background:#38bdf8;cursor:pointer;box-shadow:0 0 8px rgba(56,189,248,.5);transition:transform .1s ease}
-        input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: 'Plus Jakarta Sans', 'Sarabun', sans-serif;
+        background: #08080a;
+        color: #f4f4f5;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .font-mono {
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .studio-panel {
+        background: rgba(14, 14, 17, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+      }
+      .studio-card {
+        background: rgba(24, 24, 27, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .studio-card:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        background: rgba(24, 24, 27, 0.7);
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #27272a;
+        border-radius: 2px;
+      }
+      input[type='range'] {
+        -webkit-appearance: none;
+        background: #27272a;
+        height: 4px;
+        border-radius: 2px;
+        cursor: pointer;
+      }
+      input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 18px;
+        width: 18px;
+        border-radius: 50%;
+        background: #38bdf8;
+        cursor: pointer;
+        box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+        transition: transform 0.1s ease;
+      }
+      input[type='range']::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+      }
 
-        .sidebar-left,.sidebar-right{transition:transform .3s cubic-bezier(.16,1,.3,1)}
-        @media(max-width:1023px){
-            .sidebar-left{position:fixed;top:56px;left:0;bottom:0;width:min(320px,88vw);z-index:50;transform:translateX(-100%)}
-            .sidebar-left.open{transform:translateX(0)}
-            .sidebar-right{position:fixed;top:56px;right:0;bottom:0;width:min(320px,88vw);z-index:50;transform:translateX(100%)}
-            .sidebar-right.open{transform:translateX(0)}
+      .sidebar-left,
+      .sidebar-right {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @media (max-width: 1023px) {
+        .sidebar-left {
+          position: fixed;
+          top: 56px;
+          left: 0;
+          bottom: 0;
+          width: min(320px, 88vw);
+          z-index: 50;
+          transform: translateX(-100%);
         }
+        .sidebar-left.open {
+          transform: translateX(0);
+        }
+        .sidebar-right {
+          position: fixed;
+          top: 56px;
+          right: 0;
+          bottom: 0;
+          width: min(320px, 88vw);
+          z-index: 50;
+          transform: translateX(100%);
+        }
+        .sidebar-right.open {
+          transform: translateX(0);
+        }
+      }
 
-        #overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;backdrop-filter:blur(2px)}
-        #overlay.active{display:block}
+      #overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 40;
+        backdrop-filter: blur(2px);
+      }
+      #overlay.active {
+        display: block;
+      }
 
-        #exportModal{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;padding:1rem}
-        #exportModal.active{display:flex}
-        #exportModal .modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px)}
-        #exportModal .modal-box{position:relative;z-index:1;background:#0e0e11;border:1px solid rgba(255,255,255,.1);border-radius:16px;width:100%;max-width:640px;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 25px 60px rgba(0,0,0,.8)}
+      #exportModal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+      #exportModal.active {
+        display: flex;
+      }
+      #exportModal .modal-bg {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(6px);
+      }
+      #exportModal .modal-box {
+        position: relative;
+        z-index: 1;
+        background: #0e0e11;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 640px;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 24px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      }
 
-        #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#18181b;border:1px solid rgba(255,255,255,.1);color:#f4f4f5;padding:10px 20px;border-radius:999px;font-size:13px;font-family:'JetBrains Mono',monospace;opacity:0;pointer-events:none;transition:all .3s ease;z-index:200;white-space:nowrap}
-        #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+      #toast {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: #18181b;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #f4f4f5;
+        padding: 10px 20px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-family: 'JetBrains Mono', monospace;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 200;
+        white-space: nowrap;
+      }
+      #toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
 
-        @media(max-width:640px){#bottomCard{left:8px;right:8px;bottom:8px}}
+      @media (max-width: 640px) {
+        #bottomCard {
+          left: 8px;
+          right: 8px;
+          bottom: 8px;
+        }
+      }
     </style>
-</head>
-<body>
-
-<!-- Top Bar -->
-<header class="h-14 border-b border-white/[0.08] bg-zinc-950/90 backdrop-blur-xl px-3 sm:px-5 flex items-center justify-between z-30 select-none flex-shrink-0">
-    <div class="flex items-center space-x-3">
-        <button onclick="toggleLeft()" class="lg:hidden p-1.5 rounded-md bg-zinc-900 border border-white/10 text-zinc-400 hover:text-zinc-200 active:scale-95 transition-all">
-            <i data-lucide="network" class="w-4 h-4"></i>
+  </head>
+  <body style="margin:0;padding:0;height:100%;background:#08080a;color:#f4f4f5;display:flex;flex-direction:column;overflow:hidden">
+    <!-- Top Bar -->
+    <header
+      class="z-30 flex h-14 flex-shrink-0 items-center justify-between border-b border-white/[0.08] bg-zinc-950/90 px-3 backdrop-blur-xl select-none sm:px-5"
+    >
+      <div class="flex items-center space-x-3">
+        <button
+          onclick="toggleLeft()"
+          class="rounded-md border border-white/10 bg-zinc-900 p-1.5 text-zinc-400 transition-all hover:text-zinc-200 active:scale-95 lg:hidden"
+        >
+          <i data-lucide="network" class="h-4 w-4"></i>
         </button>
         <div class="flex items-center space-x-2.5">
-            <div class="w-8 h-8 rounded-md bg-zinc-900 border border-white/10 flex items-center justify-center shadow-inner">
-                <i data-lucide="layers" class="w-4 h-4 text-cyan-400"></i>
+          <div
+            class="flex h-8 w-8 items-center justify-center rounded-md border border-white/10 bg-zinc-900 shadow-inner"
+          >
+            <i data-lucide="layers" class="h-4 w-4 text-cyan-400"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-sm font-bold tracking-tight text-white"
+                >DisassembleNet<span class="text-cyan-400">.3D</span></span
+              >
+              <span class="rounded border border-white/10 bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400"
+                >v2.4</span
+              >
             </div>
-            <div>
-                <div class="flex items-center space-x-2">
-                    <span class="font-bold text-sm tracking-tight text-white">DisassembleNet<span class="text-cyan-400">.3D</span></span>
-                    <span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-zinc-900 text-zinc-400 border border-white/10">v2.4</span>
-                </div>
-                <p class="text-[10px] text-zinc-500 hidden sm:block font-normal leading-none mt-0.5">Spatial AI Cognitive Studio for Mechanical Remanufacturing</p>
-            </div>
+            <p class="mt-0.5 hidden text-[10px] leading-none font-normal text-zinc-500 sm:block">
+              Spatial AI Cognitive Studio for Mechanical Remanufacturing
+            </p>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="hidden lg:flex items-center space-x-3 text-xs font-mono">
-        <div class="flex items-center space-x-2 bg-zinc-900/90 px-2.5 py-1 rounded-md border border-white/[0.06]">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="text-zinc-400 text-[11px]">POMDP:</span>
-            <span class="text-zinc-200 font-medium text-[11px]">0.04s</span>
+      <div class="hidden items-center space-x-3 font-mono text-xs lg:flex">
+        <div class="flex items-center space-x-2 rounded-md border border-white/[0.06] bg-zinc-900/90 px-2.5 py-1">
+          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span>
+          <span class="text-[11px] text-zinc-400">POMDP:</span>
+          <span class="text-[11px] font-medium text-zinc-200">0.04s</span>
         </div>
-        <div class="flex items-center space-x-2 bg-zinc-900/90 px-2.5 py-1 rounded-md border border-white/[0.06]">
-            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-            <span class="text-zinc-400 text-[11px]">Tactile Override:</span>
-            <span class="text-zinc-200 font-medium text-[11px]">ARMED</span>
+        <div class="flex items-center space-x-2 rounded-md border border-white/[0.06] bg-zinc-900/90 px-2.5 py-1">
+          <span class="h-1.5 w-1.5 rounded-full bg-cyan-400"></span>
+          <span class="text-[11px] text-zinc-400">Tactile Override:</span>
+          <span class="text-[11px] font-medium text-zinc-200">ARMED</span>
         </div>
-        <div class="flex items-center space-x-2 bg-zinc-900/90 px-2.5 py-1 rounded-md border border-white/[0.06]">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-            <span class="text-zinc-400 text-[11px]">Battery Interlock:</span>
-            <span class="text-zinc-200 font-medium text-[11px]">&lt;50mm CUTOFF</span>
+        <div class="flex items-center space-x-2 rounded-md border border-white/[0.06] bg-zinc-900/90 px-2.5 py-1">
+          <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+          <span class="text-[11px] text-zinc-400">Battery Interlock:</span>
+          <span class="text-[11px] font-medium text-zinc-200">&lt;50mm CUTOFF</span>
         </div>
-    </div>
+      </div>
 
-    <div class="flex items-center space-x-2">
-        <button onclick="triggerAutoPlay()" id="playBtn" class="px-3 sm:px-3.5 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-semibold rounded-md shadow-sm transition-all flex items-center space-x-1.5 active:scale-95">
-            <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
-            <span id="playBtnText" class="hidden sm:inline">Auto Sequence</span>
+      <div class="flex items-center space-x-2">
+        <button
+          onclick="triggerAutoPlay()"
+          id="playBtn"
+          class="flex items-center space-x-1.5 rounded-md bg-cyan-500 px-3 py-1.5 text-xs font-semibold text-zinc-950 shadow-sm transition-all hover:bg-cyan-400 active:scale-95 sm:px-3.5"
+        >
+          <i data-lucide="play" class="h-3.5 w-3.5 fill-current"></i>
+          <span id="playBtnText" class="hidden sm:inline">Auto Sequence</span>
         </button>
-        <button onclick="resetAssembly()" title="Reset" class="p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-md border border-white/10 transition-all active:scale-95">
-            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        <button
+          onclick="resetAssembly()"
+          title="Reset"
+          class="rounded-md border border-white/10 bg-zinc-900 p-1.5 text-zinc-300 transition-all hover:bg-zinc-800 active:scale-95"
+        >
+          <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
         </button>
-        <button onclick="toggleRight()" class="lg:hidden p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-md border border-white/10 transition-all active:scale-95">
-            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+        <button
+          onclick="toggleRight()"
+          class="rounded-md border border-white/10 bg-zinc-900 p-1.5 text-zinc-400 transition-all hover:bg-zinc-800 hover:text-zinc-200 active:scale-95 lg:hidden"
+        >
+          <i data-lucide="bar-chart-3" class="h-4 w-4"></i>
         </button>
-    </div>
-</header>
+      </div>
+    </header>
 
-<div id="overlay" onclick="closeSidebars()"></div>
+    <div id="overlay" onclick="closeSidebars()"></div>
 
-<!-- Main -->
-<div class="flex flex-1 overflow-hidden relative" style="min-height:0">
-
-    <!-- Left Sidebar -->
-    <aside id="leftSidebar" class="sidebar-left w-80 border-r border-white/[0.08] studio-panel flex flex-col z-20 custom-scrollbar overflow-y-auto select-none">
-        <div class="p-3.5 border-b border-white/[0.08] flex items-center justify-between">
-            <div>
-                <div class="text-xs font-bold text-zinc-200 tracking-wide uppercase flex items-center space-x-1.5">
-                    <i data-lucide="network" class="w-3.5 h-3.5 text-cyan-400"></i>
-                    <span>Disassembly Plan (DAG)</span>
-                </div>
-                <p class="text-[11px] text-zinc-400 mt-0.5 font-mono">POMDP Layer-by-Layer Marching</p>
+    <!-- Main -->
+    <div class="relative flex flex-1 overflow-hidden" style="min-height: 0">
+      <!-- Left Sidebar -->
+      <aside
+        id="leftSidebar"
+        class="sidebar-left studio-panel custom-scrollbar z-20 flex w-80 flex-col overflow-y-auto border-r border-white/[0.08] select-none"
+      >
+        <div class="flex items-center justify-between border-b border-white/[0.08] p-3.5">
+          <div>
+            <div class="flex items-center space-x-1.5 text-xs font-bold tracking-wide text-zinc-200 uppercase">
+              <i data-lucide="network" class="h-3.5 w-3.5 text-cyan-400"></i>
+              <span>Disassembly Plan (DAG)</span>
             </div>
-            <span class="text-[10px] font-mono bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded border border-white/10">6 Steps</span>
+            <p class="mt-0.5 font-mono text-[11px] text-zinc-400">POMDP Layer-by-Layer Marching</p>
+          </div>
+          <span class="rounded border border-white/10 bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-zinc-300"
+            >6 Steps</span
+          >
         </div>
-        <div class="p-2.5 space-y-1.5 flex-1" id="stepList"></div>
-        <div class="p-3.5 border-t border-white/[0.08] bg-zinc-950/60 space-y-3 flex-shrink-0">
-            <div>
-                <div class="flex items-center justify-between text-[11px] font-mono">
-                    <span class="text-zinc-400">End-Effector Force (F_z)</span>
-                    <span class="text-cyan-400 font-bold" id="forceDisplay">1.4 N / 8.5 N</span>
-                </div>
-                <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden mt-1.5">
-                    <div id="forceBar" class="bg-cyan-500 h-full w-[16%] transition-all duration-500"></div>
-                </div>
+        <div class="flex-1 space-y-1.5 p-2.5" id="stepList"></div>
+        <div class="flex-shrink-0 space-y-3 border-t border-white/[0.08] bg-zinc-950/60 p-3.5">
+          <div>
+            <div class="flex items-center justify-between font-mono text-[11px]">
+              <span class="text-zinc-400">End-Effector Force (F_z)</span>
+              <span class="font-bold text-cyan-400" id="forceDisplay">1.4 N / 8.5 N</span>
             </div>
-            <div>
-                <div class="flex items-center justify-between text-[11px] font-mono">
-                    <span class="text-zinc-400">Battery Thermal Zone</span>
-                    <span class="text-emerald-400 font-bold" id="tempDisplay">28.5 °C (Safe)</span>
-                </div>
-                <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden mt-1.5">
-                    <div id="tempBar" class="bg-emerald-500 h-full w-[20%] transition-all duration-500"></div>
-                </div>
+            <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+              <div id="forceBar" class="h-full w-[16%] bg-cyan-500 transition-all duration-500"></div>
             </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between font-mono text-[11px]">
+              <span class="text-zinc-400">Battery Thermal Zone</span>
+              <span class="font-bold text-emerald-400" id="tempDisplay">28.5 °C (Safe)</span>
+            </div>
+            <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+              <div id="tempBar" class="h-full w-[20%] bg-emerald-500 transition-all duration-500"></div>
+            </div>
+          </div>
         </div>
-    </aside>
+      </aside>
 
-    <!-- 3D Viewport -->
-    <main class="flex-1 relative bg-zinc-950 flex flex-col overflow-hidden" style="min-width:0">
-        <div id="canvasContainer" class="w-full h-full cursor-grab active:cursor-grabbing touch-none"></div>
+      <!-- 3D Viewport -->
+      <main class="relative flex flex-1 flex-col overflow-hidden bg-zinc-950" style="min-width:0;flex:1;position:relative;background:#08080a;display:flex;flex-direction:column;overflow:hidden">
+        <div id="canvasContainer" style="width:100%;height:100%;flex:1;cursor:grab;touch-action:none;"></div>
 
         <!-- Camera controls -->
-        <div class="absolute top-3 left-3 flex items-center space-x-1 bg-zinc-900/90 backdrop-blur-md p-1 rounded-lg border border-white/10 z-10 select-none shadow-xl">
-            <button onclick="setCameraView('iso')" class="px-2 py-1 text-[11px] font-mono rounded hover:bg-zinc-800 text-zinc-300 transition-all">ISO</button>
-            <button onclick="setCameraView('top')" class="px-2 py-1 text-[11px] font-mono rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">TOP</button>
-            <button onclick="setCameraView('front')" class="px-2 py-1 text-[11px] font-mono rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">FRONT</button>
-            <div class="w-[1px] h-3 bg-white/10 mx-0.5"></div>
-            <button onclick="toggleWireframe()" id="wireframeBtn" title="Wireframe" class="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">
-                <i data-lucide="box" class="w-3.5 h-3.5"></i>
-            </button>
-            <button onclick="toggleXray()" id="xrayBtn" title="X-Ray" class="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all">
-                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-            </button>
+        <div
+          class="absolute top-3 left-3 z-10 flex items-center space-x-1 rounded-lg border border-white/10 bg-zinc-900/90 p-1 shadow-xl backdrop-blur-md select-none"
+        >
+          <button
+            onclick="setCameraView('iso')"
+            class="rounded px-2 py-1 font-mono text-[11px] text-zinc-300 transition-all hover:bg-zinc-800"
+          >
+            ISO
+          </button>
+          <button
+            onclick="setCameraView('top')"
+            class="rounded px-2 py-1 font-mono text-[11px] text-zinc-400 transition-all hover:bg-zinc-800 hover:text-zinc-200"
+          >
+            TOP
+          </button>
+          <button
+            onclick="setCameraView('front')"
+            class="rounded px-2 py-1 font-mono text-[11px] text-zinc-400 transition-all hover:bg-zinc-800 hover:text-zinc-200"
+          >
+            FRONT
+          </button>
+          <div class="mx-0.5 h-3 w-[1px] bg-white/10"></div>
+          <button
+            onclick="toggleWireframe()"
+            id="wireframeBtn"
+            title="Wireframe"
+            class="rounded p-1 text-zinc-400 transition-all hover:bg-zinc-800 hover:text-zinc-200"
+          >
+            <i data-lucide="box" class="h-3.5 w-3.5"></i>
+          </button>
+          <button
+            onclick="toggleXray()"
+            id="xrayBtn"
+            title="X-Ray"
+            class="rounded p-1 text-zinc-400 transition-all hover:bg-zinc-800 hover:text-zinc-200"
+          >
+            <i data-lucide="eye" class="h-3.5 w-3.5"></i>
+          </button>
         </div>
 
         <!-- Explode slider -->
-        <div class="absolute top-3 right-3 flex items-center space-x-2 bg-zinc-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 z-10 select-none shadow-xl">
-            <span class="text-[11px] font-mono text-zinc-400 hidden sm:inline">Explode</span>
-            <input type="range" id="explodeSlider" min="0" max="100" value="0" class="w-20 sm:w-28" oninput="onExplodeSlider(this.value)">
-            <span class="text-[11px] font-mono text-cyan-400 font-bold w-8" id="explodePercent">0%</span>
+        <div
+          class="absolute top-3 right-3 z-10 flex items-center space-x-2 rounded-lg border border-white/10 bg-zinc-900/90 px-3 py-1.5 shadow-xl backdrop-blur-md select-none"
+        >
+          <span class="hidden font-mono text-[11px] text-zinc-400 sm:inline">Explode</span>
+          <input
+            type="range"
+            id="explodeSlider"
+            min="0"
+            max="100"
+            value="0"
+            class="w-20 sm:w-28"
+            oninput="onExplodeSlider(this.value)"
+          />
+          <span class="w-8 font-mono text-[11px] font-bold text-cyan-400" id="explodePercent">0%</span>
         </div>
 
         <!-- Bottom step card -->
-        <div id="bottomCard" class="absolute bottom-3 left-3 right-3 sm:right-auto sm:w-[420px] studio-panel rounded-xl p-3.5 shadow-2xl z-10 border border-white/[0.08]">
-            <div class="flex items-start">
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center space-x-2 flex-wrap gap-1">
-                        <span class="px-1.5 py-0.5 text-[10px] font-mono font-bold rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex-shrink-0" id="currentStepBadge">STEP 1 / 6</span>
-                        <h3 class="font-bold text-sm text-zinc-100 truncate" id="currentStepTitle">ฝาครอบล่าง (Bottom Casing)</h3>
-                    </div>
-                    <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed line-clamp-2" id="currentStepDesc">คลายน็อต Torx M2 6 จุด ด้วยกลยุทธ์ Wiggle &amp; Reverse ป้องกันเกลียวหวาน</p>
-                </div>
+        <div
+          id="bottomCard"
+          class="studio-panel absolute right-3 bottom-3 left-3 z-10 rounded-xl border border-white/[0.08] p-3.5 shadow-2xl sm:right-auto sm:w-[420px]"
+        >
+          <div class="flex items-start">
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-1 space-x-2">
+                <span
+                  class="flex-shrink-0 rounded border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold text-cyan-400"
+                  id="currentStepBadge"
+                  >STEP 1 / 6</span
+                >
+                <h3 class="truncate text-sm font-bold text-zinc-100" id="currentStepTitle">
+                  ฝาครอบล่าง (Bottom Casing)
+                </h3>
+              </div>
+              <p class="mt-1.5 line-clamp-2 text-xs leading-relaxed text-zinc-400" id="currentStepDesc">
+                คลายน็อต Torx M2 6 จุด ด้วยกลยุทธ์ Wiggle &amp; Reverse ป้องกันเกลียวหวาน
+              </p>
             </div>
-            <div class="mt-3 pt-3 border-t border-white/[0.08] grid grid-cols-3 gap-2 text-center text-xs font-mono">
-                <div class="bg-zinc-900/60 p-2 rounded border border-white/[0.04]">
-                    <div class="text-[10px] text-zinc-500 uppercase tracking-wider">Toolhead</div>
-                    <div class="text-zinc-200 font-semibold mt-0.5 text-[11px] truncate" id="currentTool">Torx Bit M2</div>
-                </div>
-                <div class="bg-zinc-900/60 p-2 rounded border border-white/[0.04]">
-                    <div class="text-[10px] text-zinc-500 uppercase tracking-wider">Strategy</div>
-                    <div class="text-cyan-400 font-semibold mt-0.5 text-[11px] truncate" id="currentStrategy">Wiggle &amp; Reverse</div>
-                </div>
-                <div class="bg-zinc-900/60 p-2 rounded border border-white/[0.04]">
-                    <div class="text-[10px] text-zinc-500 uppercase tracking-wider">Integrity</div>
-                    <div class="text-emerald-400 font-semibold mt-0.5 text-[11px]" id="currentIntegrity">100%</div>
-                </div>
+          </div>
+          <div class="mt-3 grid grid-cols-3 gap-2 border-t border-white/[0.08] pt-3 text-center font-mono text-xs">
+            <div class="rounded border border-white/[0.04] bg-zinc-900/60 p-2">
+              <div class="text-[10px] tracking-wider text-zinc-500 uppercase">Toolhead</div>
+              <div class="mt-0.5 truncate text-[11px] font-semibold text-zinc-200" id="currentTool">Torx Bit M2</div>
             </div>
+            <div class="rounded border border-white/[0.04] bg-zinc-900/60 p-2">
+              <div class="text-[10px] tracking-wider text-zinc-500 uppercase">Strategy</div>
+              <div class="mt-0.5 truncate text-[11px] font-semibold text-cyan-400" id="currentStrategy">
+                Wiggle &amp; Reverse
+              </div>
+            </div>
+            <div class="rounded border border-white/[0.04] bg-zinc-900/60 p-2">
+              <div class="text-[10px] tracking-wider text-zinc-500 uppercase">Integrity</div>
+              <div class="mt-0.5 text-[11px] font-semibold text-emerald-400" id="currentIntegrity">100%</div>
+            </div>
+          </div>
         </div>
-    </main>
+      </main>
 
-    <!-- Right Sidebar -->
-    <aside id="rightSidebar" class="sidebar-right w-80 border-l border-white/[0.08] studio-panel flex flex-col z-20 custom-scrollbar overflow-y-auto p-4 space-y-4 select-none">
+      <!-- Right Sidebar -->
+      <aside
+        id="rightSidebar"
+        class="sidebar-right studio-panel custom-scrollbar z-20 flex w-80 flex-col space-y-4 overflow-y-auto border-l border-white/[0.08] p-4 select-none"
+      >
         <div>
-            <div class="text-xs font-bold text-zinc-200 tracking-wide uppercase flex items-center space-x-1.5">
-                <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-cyan-400"></i>
-                <span>Circularity &amp; LCA Metrics</span>
-            </div>
-            <p class="text-[11px] text-zinc-400 mt-0.5 font-mono">ISO 14044 Life Cycle Assessment</p>
+          <div class="flex items-center space-x-1.5 text-xs font-bold tracking-wide text-zinc-200 uppercase">
+            <i data-lucide="bar-chart-3" class="h-3.5 w-3.5 text-cyan-400"></i>
+            <span>Circularity &amp; LCA Metrics</span>
+          </div>
+          <p class="mt-0.5 font-mono text-[11px] text-zinc-400">ISO 14044 Life Cycle Assessment</p>
         </div>
 
         <div class="space-y-2">
-            <div class="p-3 studio-card rounded-lg">
-                <div class="flex items-center justify-between text-xs">
-                    <span class="text-zinc-400">Economic Value Harvested:</span>
-                    <span class="text-emerald-400 font-mono font-bold text-sm">&#3647; 560.00</span>
-                </div>
-                <div class="text-[11px] text-zinc-500 mt-1 flex justify-between font-mono">
-                    <span>Scrap Value: &#3647; 120.00</span>
-                    <span class="text-emerald-400 font-semibold">+366% Reman</span>
-                </div>
+          <div class="studio-card rounded-lg p-3">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-zinc-400">Economic Value Harvested:</span>
+              <span class="font-mono text-sm font-bold text-emerald-400">&#3647; 560.00</span>
             </div>
-            <div class="p-3 studio-card rounded-lg">
-                <div class="flex items-center justify-between text-xs">
-                    <span class="text-zinc-400">Carbon Avoided (CO2e):</span>
-                    <span class="text-cyan-400 font-mono font-bold text-sm">14.32 kg</span>
-                </div>
-                <p class="text-[11px] text-zinc-500 mt-1 font-mono">&#8801; 62 km driving offset (ISO 14044)</p>
+            <div class="mt-1 flex justify-between font-mono text-[11px] text-zinc-500">
+              <span>Scrap Value: &#3647; 120.00</span>
+              <span class="font-semibold text-emerald-400">+366% Reman</span>
             </div>
-            <div class="p-3 studio-card rounded-lg">
-                <div class="flex items-center justify-between text-xs">
-                    <span class="text-zinc-400">Material Circularity (MCI):</span>
-                    <span class="text-zinc-200 font-mono font-bold text-sm">0.89 / 1.00</span>
-                </div>
-                <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden mt-2">
-                    <div class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full w-[89%]"></div>
-                </div>
+          </div>
+          <div class="studio-card rounded-lg p-3">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-zinc-400">Carbon Avoided (CO2e):</span>
+              <span class="font-mono text-sm font-bold text-cyan-400">14.32 kg</span>
             </div>
-            <div class="p-3 studio-card rounded-lg">
-                <div class="flex items-center justify-between text-xs">
-                    <span class="text-zinc-400">Planning Time (POMDP):</span>
-                    <span class="text-amber-400 font-mono font-bold text-sm">1.24 s</span>
-                </div>
-                <p class="text-[11px] text-zinc-500 mt-1 font-mono">vs 45&#8211;120 min manual (2,000&#215; faster)</p>
+            <p class="mt-1 font-mono text-[11px] text-zinc-500">&#8801; 62 km driving offset (ISO 14044)</p>
+          </div>
+          <div class="studio-card rounded-lg p-3">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-zinc-400">Material Circularity (MCI):</span>
+              <span class="font-mono text-sm font-bold text-zinc-200">0.89 / 1.00</span>
             </div>
+            <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+              <div class="h-full w-[89%] bg-gradient-to-r from-cyan-500 to-emerald-400"></div>
+            </div>
+          </div>
+          <div class="studio-card rounded-lg p-3">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-zinc-400">Planning Time (POMDP):</span>
+              <span class="font-mono text-sm font-bold text-amber-400">1.24 s</span>
+            </div>
+            <p class="mt-1 font-mono text-[11px] text-zinc-500">vs 45&#8211;120 min manual (2,000&#215; faster)</p>
+          </div>
         </div>
 
-        <div class="pt-3 border-t border-white/[0.08] space-y-2">
-            <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono">Recovered Parts</span>
-            <div class="space-y-1 text-xs font-mono">
-                <div class="p-2 rounded bg-zinc-900/50 border border-white/[0.04] flex items-center justify-between">
-                    <span class="text-zinc-300">PCB Motherboard (SoC)</span>
-                    <span class="text-emerald-400 text-[11px] font-bold">READY</span>
-                </div>
-                <div class="p-2 rounded bg-zinc-900/50 border border-white/[0.04] flex items-center justify-between">
-                    <span class="text-zinc-300">Neodymium Cooling Fan</span>
-                    <span class="text-emerald-400 text-[11px] font-bold">READY</span>
-                </div>
-                <div class="p-2 rounded bg-zinc-900/50 border border-white/[0.04] flex items-center justify-between">
-                    <span class="text-zinc-300">Li-ion Battery 54Wh</span>
-                    <span class="text-amber-400 text-[11px] font-bold">COLD-PEELED</span>
-                </div>
-                <div class="p-2 rounded bg-zinc-900/50 border border-white/[0.04] flex items-center justify-between">
-                    <span class="text-zinc-300">Copper Heat Pipe</span>
-                    <span class="text-emerald-400 text-[11px] font-bold">READY</span>
-                </div>
-                <div class="p-2 rounded bg-zinc-900/50 border border-white/[0.04] flex items-center justify-between">
-                    <span class="text-zinc-300">Aluminum Casing (x2)</span>
-                    <span class="text-zinc-500 text-[11px] font-bold">QUEUED</span>
-                </div>
+        <div class="space-y-2 border-t border-white/[0.08] pt-3">
+          <span class="font-mono text-[11px] font-bold tracking-wider text-zinc-400 uppercase">Recovered Parts</span>
+          <div class="space-y-1 font-mono text-xs">
+            <div class="flex items-center justify-between rounded border border-white/[0.04] bg-zinc-900/50 p-2">
+              <span class="text-zinc-300">PCB Motherboard (SoC)</span>
+              <span class="text-[11px] font-bold text-emerald-400">READY</span>
             </div>
+            <div class="flex items-center justify-between rounded border border-white/[0.04] bg-zinc-900/50 p-2">
+              <span class="text-zinc-300">Neodymium Cooling Fan</span>
+              <span class="text-[11px] font-bold text-emerald-400">READY</span>
+            </div>
+            <div class="flex items-center justify-between rounded border border-white/[0.04] bg-zinc-900/50 p-2">
+              <span class="text-zinc-300">Li-ion Battery 54Wh</span>
+              <span class="text-[11px] font-bold text-amber-400">COLD-PEELED</span>
+            </div>
+            <div class="flex items-center justify-between rounded border border-white/[0.04] bg-zinc-900/50 p-2">
+              <span class="text-zinc-300">Copper Heat Pipe</span>
+              <span class="text-[11px] font-bold text-emerald-400">READY</span>
+            </div>
+            <div class="flex items-center justify-between rounded border border-white/[0.04] bg-zinc-900/50 p-2">
+              <span class="text-zinc-300">Aluminum Casing (x2)</span>
+              <span class="text-[11px] font-bold text-zinc-500">QUEUED</span>
+            </div>
+          </div>
         </div>
 
-        <div class="pt-3 border-t border-white/[0.08] space-y-2">
-            <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono">Industrial Pipeline Export</span>
-            <button onclick="openExportModal('ros')" class="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-zinc-200 rounded border border-white/10 flex items-center justify-center space-x-2 transition-all active:scale-95">
-                <i data-lucide="download" class="w-3.5 h-3.5 text-cyan-400"></i>
-                <span>Export ROS MoveIt Plan (.yaml)</span>
-            </button>
-            <button onclick="openExportModal('gcode')" class="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-zinc-200 rounded border border-white/10 flex items-center justify-center space-x-2 transition-all active:scale-95">
-                <i data-lucide="code-2" class="w-3.5 h-3.5 text-amber-400"></i>
-                <span>Export G-Code Trajectory (.nc)</span>
-            </button>
-            <button onclick="openExportModal('ar')" class="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-cyan-400 rounded border border-cyan-500/30 flex items-center justify-center space-x-2 transition-all active:scale-95">
-                <i data-lucide="scan" class="w-3.5 h-3.5"></i>
-                <span>WebAR Operator Guide (.json)</span>
-            </button>
+        <div class="space-y-2 border-t border-white/[0.08] pt-3">
+          <span class="font-mono text-[11px] font-bold tracking-wider text-zinc-400 uppercase"
+            >Industrial Pipeline Export</span
+          >
+          <button
+            onclick="openExportModal('ros')"
+            class="flex w-full items-center justify-center space-x-2 rounded border border-white/10 bg-zinc-900 py-2.5 font-mono text-xs text-zinc-200 transition-all hover:bg-zinc-800 active:scale-95"
+          >
+            <i data-lucide="download" class="h-3.5 w-3.5 text-cyan-400"></i>
+            <span>Export ROS MoveIt Plan (.yaml)</span>
+          </button>
+          <button
+            onclick="openExportModal('gcode')"
+            class="flex w-full items-center justify-center space-x-2 rounded border border-white/10 bg-zinc-900 py-2.5 font-mono text-xs text-zinc-200 transition-all hover:bg-zinc-800 active:scale-95"
+          >
+            <i data-lucide="code-2" class="h-3.5 w-3.5 text-amber-400"></i>
+            <span>Export G-Code Trajectory (.nc)</span>
+          </button>
+          <button
+            onclick="openExportModal('ar')"
+            class="flex w-full items-center justify-center space-x-2 rounded border border-cyan-500/30 bg-zinc-900 py-2.5 font-mono text-xs text-cyan-400 transition-all hover:bg-zinc-800 active:scale-95"
+          >
+            <i data-lucide="scan" class="h-3.5 w-3.5"></i>
+            <span>WebAR Operator Guide (.json)</span>
+          </button>
         </div>
-    </aside>
-</div>
-
-<!-- Export Modal -->
-<div id="exportModal">
-    <div class="modal-bg" onclick="closeExportModal()"></div>
-    <div class="modal-box custom-scrollbar">
-        <div class="flex items-start justify-between mb-4">
-            <div>
-                <h2 class="font-bold text-base text-zinc-100" id="modalTitle">Export</h2>
-                <p class="text-xs text-zinc-400 mt-0.5 font-mono" id="modalSubtitle"></p>
-            </div>
-            <button onclick="closeExportModal()" class="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-all flex-shrink-0 ml-4">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <div id="modalContent" class="bg-zinc-950 rounded-lg border border-white/[0.08] p-4 overflow-x-auto">
-            <pre class="text-[11px] font-mono text-zinc-300 whitespace-pre leading-relaxed"></pre>
-        </div>
-        <div class="flex items-center space-x-2 mt-4">
-            <button onclick="copyModalContent()" class="flex-1 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-xs font-bold rounded-lg flex items-center justify-center space-x-2 transition-all active:scale-95">
-                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                <span>Copy</span>
-            </button>
-            <button onclick="downloadModalContent()" class="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold rounded-lg flex items-center justify-center space-x-2 transition-all active:scale-95">
-                <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                <span id="downloadBtnText">Download</span>
-            </button>
-        </div>
+      </aside>
     </div>
-</div>
 
-<div id="toast"></div>
+    <!-- Export Modal -->
+    <div id="exportModal">
+      <div class="modal-bg" onclick="closeExportModal()"></div>
+      <div class="modal-box custom-scrollbar">
+        <div class="mb-4 flex items-start justify-between">
+          <div>
+            <h2 class="text-base font-bold text-zinc-100" id="modalTitle">Export</h2>
+            <p class="mt-0.5 font-mono text-xs text-zinc-400" id="modalSubtitle"></p>
+          </div>
+          <button
+            onclick="closeExportModal()"
+            class="ml-4 flex-shrink-0 rounded p-1 text-zinc-400 transition-all hover:bg-zinc-800 hover:text-zinc-200"
+          >
+            <i data-lucide="x" class="h-5 w-5"></i>
+          </button>
+        </div>
+        <div id="modalContent" class="overflow-x-auto rounded-lg border border-white/[0.08] bg-zinc-950 p-4">
+          <pre class="font-mono text-[11px] leading-relaxed whitespace-pre text-zinc-300"></pre>
+        </div>
+        <div class="mt-4 flex items-center space-x-2">
+          <button
+            onclick="copyModalContent()"
+            class="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-cyan-500 py-2 text-xs font-bold text-zinc-950 transition-all hover:bg-cyan-400 active:scale-95"
+          >
+            <i data-lucide="copy" class="h-3.5 w-3.5"></i>
+            <span>Copy</span>
+          </button>
+          <button
+            onclick="downloadModalContent()"
+            class="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-zinc-800 py-2 text-xs font-bold text-zinc-200 transition-all hover:bg-zinc-700 active:scale-95"
+          >
+            <i data-lucide="download" class="h-3.5 w-3.5"></i>
+            <span id="downloadBtnText">Download</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
-<script>
-const stepsData=[
-    {id:1,name:"1. ฝาครอบล่าง (Bottom Casing)",part:"casing_bottom",
-     desc:"คลายน็อต Torx M2 6 จุด ด้วยกลยุทธ์ Wiggle & Reverse ป้องกันเกลียวหวาน",
-     tool:"Torx Bit M2",strategy:"Wiggle & Reverse",integrity:"100%",
-     force:"1.4 N",forceW:"16%",temp:"28.5 °C (Safe)",tempW:"20%",tempCls:"bg-emerald-500",
-     offset:{x:0,y:-2.2,z:0}},
-    {id:2,name:"2. แบตเตอรี่ Li-ion (Battery Pack)",part:"battery",
-     desc:"ตรวจพบ Battery Sentinel: ตัดระบบความร้อน! ใช้ Cold Micro-Shear 15° ลอกแถบกาว",
-     tool:"Cold Suction & Shear",strategy:"Battery Safety Interlock",integrity:"100% (No Puncture)",
-     force:"2.8 N",forceW:"32%",temp:"29.0 °C (Cold)",tempW:"22%",tempCls:"bg-amber-400",
-     offset:{x:-2,y:-0.8,z:1}},
-    {id:3,name:"3. พัดลมระบายความร้อน (Cooling Fan)",part:"fan",
-     desc:"ปลดขั้วต่อสายไฟ 4-pin และสกรูยึด 2 จุด ดึงใบพัดและแม่เหล็ก Neodymium ออก",
-     tool:"Soft Gripper + Bit",strategy:"Rare Earth Harvest",integrity:"100%",
-     force:"1.1 N",forceW:"12%",temp:"28.5 °C (Safe)",tempW:"20%",tempCls:"bg-emerald-500",
-     offset:{x:2,y:1.2,z:-1.2}},
-    {id:4,name:"4. ฮีตซิงก์ท่อทองแดง (Copper Heat Pipe)",part:"heatsink",
-     desc:"คลายสปริงยึด CPU/GPU 4 ตำแหน่งในแนวทแยง (Cross-pattern) ป้องกัน Die แตก",
-     tool:"Spring Tension Driver",strategy:"Cross-Pattern Relief",integrity:"100%",
-     force:"1.8 N",forceW:"21%",temp:"28.5 °C (Safe)",tempW:"20%",tempCls:"bg-emerald-500",
-     offset:{x:0,y:1.5,z:-1.2}},
-    {id:5,name:"5. เมนบอร์ดหลัก (Main PCB Motherboard)",part:"pcb",
-     desc:"ปลดสายแพ Display/Keyboard ยกแผงวงจรพร้อมชิป SoC และ RAM ออกโดยไม่ดัดงอ",
-     tool:"Dual Vacuum Array",strategy:"Zero-Bending Lift",integrity:"100%",
-     force:"0.9 N",forceW:"10%",temp:"28.5 °C (Safe)",tempW:"20%",tempCls:"bg-emerald-500",
-     offset:{x:0,y:0.7,z:0}},
-    {id:6,name:"6. ฝาครอบบน & คีย์บอร์ด (Top Casing)",part:"casing_top",
-     desc:"ปลดสลัก Snap-fits รอบขอบตัวเครื่องด้วยแรงดันกดต่ำกว่าขีดจำกัดความเค้นคราก",
-     tool:"Compliant Soft Pry",strategy:"Stress-Bound Release",integrity:"100%",
-     force:"2.1 N",forceW:"24%",temp:"28.5 °C (Safe)",tempW:"20%",tempCls:"bg-emerald-500",
-     offset:{x:0,y:2.5,z:0}}
-];
+    <div id="toast"></div>
 
-const EXPORTS={
-  ros:{title:"Export ROS MoveIt Plan",subtitle:"trajectory_plan.yaml",filename:"trajectory_plan.yaml",ext:".yaml",
-    get text(){return`# DisassembleNet-3D — ROS MoveIt Trajectory Plan\n# Generated: ${new Date().toISOString()}\n# Device: Generic Laptop Assembly (TU Berlin Dataset)\n# Planner: POMDP + Contact-Graph DAG v2.4\n\nheader:\n  frame_id: "base_link"\n\nrobot_state:\n  joint_names: [joint1, joint2, joint3, joint4, joint5, joint6]\n  joint_positions: [0.0, -0.785, 1.571, -0.785, -1.571, 0.0]\n\ndisassembly_sequence:\n  - step: 1\n    name: "Bottom Casing"\n    tool: "TORX_BIT_M2"\n    strategy: "WIGGLE_REVERSE"\n    force_limit_N: 8.5\n    torque_profile: {freq_hz: 7.5, amplitude_Nm: 0.45}\n    safety_flags: []\n\n  - step: 2\n    name: "Li-ion Battery Pack"\n    tool: "COLD_SUCTION_SHEAR"\n    strategy: "BATTERY_SAFETY_INTERLOCK"\n    force_limit_N: 4.0\n    thermal_cutoff_mm: 50\n    safety_flags: [THERMAL_CUTOFF, VACUUM_ONLY]\n\n  - step: 3\n    name: "Cooling Fan"\n    tool: "SOFT_GRIPPER"\n    strategy: "RARE_EARTH_HARVEST"\n    force_limit_N: 3.0\n    safety_flags: []\n\n  - step: 4\n    name: "Copper Heat Pipe"\n    tool: "SPRING_TENSION_DRIVER"\n    strategy: "CROSS_PATTERN_RELIEF"\n    force_limit_N: 5.0\n    screw_pattern: "diagonal_4pt"\n    safety_flags: []\n\n  - step: 5\n    name: "Main PCB Motherboard"\n    tool: "DUAL_VACUUM_ARRAY"\n    strategy: "ZERO_BENDING_LIFT"\n    force_limit_N: 2.5\n    flex_cable_disconnect: true\n    safety_flags: [STATIC_GROUND]\n\n  - step: 6\n    name: "Top Casing & Keyboard"\n    tool: "COMPLIANT_SOFT_PRY"\n    strategy: "STRESS_BOUND_RELEASE"\n    force_limit_N: 6.0\n    snap_fit_points: 8\n    safety_flags: []\n\nlca_metrics:\n  economic_value_thb: 560.00\n  scrap_baseline_thb: 120.00\n  carbon_avoided_kg_co2e: 14.32\n  mci_score: 0.89\n  planning_time_s: 1.24\n  intact_recovery_pct: 95.2\n`}},
-  gcode:{title:"Export G-Code Trajectory",subtitle:"disassembly_path.nc — 6-DOF CNC/Robot Controller",filename:"disassembly_path.nc",ext:".nc",
-    get text(){return`; DisassembleNet-3D — G-Code Trajectory Plan\n; Generated: ${new Date().toISOString()}\n; Device: Generic Laptop Assembly\n; Units: mm | Forces: N\n\n%\nO0001 (DISASSEMBLENET_3D)\nN10 G21        ; Metric\nN20 G90        ; Absolute\nN30 G94        ; Feed per minute\n\n; STEP 1: Bottom Casing — Torx M2 Wiggle & Reverse\nN100 T01 M06\nN110 S750 M03\nN120 G00 Z5.0\nN130 G00 X0.0 Y-45.0\nN140 G01 Z-2.0 F80\nN150 M98 P9001   ; wiggle-reverse subroutine\nN160 G00 Z10.0\n\n; STEP 2: Battery Pack — Cold Suction (Thermal Interlock)\nN200 T02 M06\nN210 M87         ; THERMAL CUTOFF ARMED\nN220 G00 X-85.0 Y-28.0\nN230 G01 Z-2.0 F60\nN240 M88         ; VACUUM ON\nN250 G01 Z5.0 F40\nN260 M89         ; VACUUM OFF\nN270 G00 Z10.0\n\n; STEP 3: Cooling Fan — Soft Gripper\nN300 T03 M06\nN310 G00 X140.0 Y-26.0\nN320 G01 Z-1.5 F50\nN330 M91         ; GRIPPER CLOSE\nN340 G01 Z8.0 F60\nN350 G00 X300.0 Y0.0\n\n; STEP 4: Heat Pipe — Cross-Pattern 4-screw\nN400 T04 M06\nN410 G00 X30.0 Y-25.0\nN420 G01 Z-1.0 F70\nN430 M98 P9002\nN440 G00 Z10.0\n\n; STEP 5: Main PCB — Dual Vacuum Zero-Bending\nN500 T05 M06\nN510 M93         ; STATIC GROUND ON\nN520 G00 X0.0 Y-32.0\nN530 G01 Z-1.0 F40\nN540 M88\nN550 G01 Z15.0 F30\nN560 G00 X400.0 Y0.0\nN570 M89\n\n; STEP 6: Top Casing — Snap-fit Release\nN600 T06 M06\nN610 G00 X0.0 Y-12.0\nN620 G01 Z0.0 F50\nN630 M98 P9003\nN640 G00 Z20.0\n\nN9000 M30\n\nO9001 (WIGGLE_REVERSE)\n  G04 P200 M104 S750\n  G04 P300 M105 S500\n  G04 P300 M99\nO9002 (CROSS_4PT)\n  G00 X-15.0 Y-10.0 G01 Z-0.5 M98 P9001\n  G00 X15.0 Y10.0 G01 Z-0.5 M98 P9001\n  M99\nO9003 (SNAP_8PT) M99\n%\n`}},
-  ar:{title:"WebAR Operator Guide",subtitle:"ar_guide_config.json — WebXR AR overlay config",filename:"ar_guide_config.json",ext:".json",
-    get text(){return`{\n  "system": "DisassembleNet-3D WebAR Operator Guide",\n  "version": "2.4",\n  "generated": "${new Date().toISOString()}",\n  "device_requirements": {\n    "android": "Chrome 81+ (ARCore required)",\n    "ios": "Safari 16+ (LiDAR preferred)",\n    "web_api": "WebXR Device API + WebGL 2.0"\n  },\n  "ar_markers": [\n    {"step":1,"part":"casing_bottom","overlay_color":"#38bdf8","annotation":"ตำแหน่งน็อต Torx M2 (6 จุด) — หมุนทวนเข็มนาฬิกา","force_max_N":8.5},\n    {"step":2,"part":"battery","overlay_color":"#f59e0b","annotation":"BATTERY ZONE — Cold Suction เท่านั้น ห้ามความร้อน","thermal_cutoff_mm":50},\n    {"step":3,"part":"fan","overlay_color":"#10b981","annotation":"ปลดขั้ว 4-pin ก่อน แล้วดึงตัวใบพัดขึ้นตรงๆ"},\n    {"step":4,"part":"heatsink","overlay_color":"#f97316","annotation":"คลายสกรู 4 ตัวสลับทแยง ทีละ 1/4 รอบ"},\n    {"step":5,"part":"pcb","overlay_color":"#a78bfa","annotation":"ปลดสายแพ 3 เส้น ก่อนยกแผงตรงขึ้น ห้ามงอ"},\n    {"step":6,"part":"casing_top","overlay_color":"#38bdf8","annotation":"กดสลัก Snap-fit 8 จุดรอบขอบพร้อมกัน"}\n  ],\n  "lca_overlay": {\n    "value_recovered_thb": 560.00,\n    "carbon_kg_co2e": 14.32,\n    "mci_score": 0.89\n  }\n}\n`}}
-};
+    <script>
+      const stepsData = [
+        {
+          id: 1,
+          name: '1. ฝาครอบล่าง (Bottom Casing)',
+          part: 'casing_bottom',
+          desc: 'คลายน็อต Torx M2 6 จุด ด้วยกลยุทธ์ Wiggle & Reverse ป้องกันเกลียวหวาน',
+          tool: 'Torx Bit M2',
+          strategy: 'Wiggle & Reverse',
+          integrity: '100%',
+          force: '1.4 N',
+          forceW: '16%',
+          temp: '28.5 °C (Safe)',
+          tempW: '20%',
+          tempCls: 'bg-emerald-500',
+          offset: { x: 0, y: -2.2, z: 0 },
+        },
+        {
+          id: 2,
+          name: '2. แบตเตอรี่ Li-ion (Battery Pack)',
+          part: 'battery',
+          desc: 'ตรวจพบ Battery Sentinel: ตัดระบบความร้อน! ใช้ Cold Micro-Shear 15° ลอกแถบกาว',
+          tool: 'Cold Suction & Shear',
+          strategy: 'Battery Safety Interlock',
+          integrity: '100% (No Puncture)',
+          force: '2.8 N',
+          forceW: '32%',
+          temp: '29.0 °C (Cold)',
+          tempW: '22%',
+          tempCls: 'bg-amber-400',
+          offset: { x: -2, y: -0.8, z: 1 },
+        },
+        {
+          id: 3,
+          name: '3. พัดลมระบายความร้อน (Cooling Fan)',
+          part: 'fan',
+          desc: 'ปลดขั้วต่อสายไฟ 4-pin และสกรูยึด 2 จุด ดึงใบพัดและแม่เหล็ก Neodymium ออก',
+          tool: 'Soft Gripper + Bit',
+          strategy: 'Rare Earth Harvest',
+          integrity: '100%',
+          force: '1.1 N',
+          forceW: '12%',
+          temp: '28.5 °C (Safe)',
+          tempW: '20%',
+          tempCls: 'bg-emerald-500',
+          offset: { x: 2, y: 1.2, z: -1.2 },
+        },
+        {
+          id: 4,
+          name: '4. ฮีตซิงก์ท่อทองแดง (Copper Heat Pipe)',
+          part: 'heatsink',
+          desc: 'คลายสปริงยึด CPU/GPU 4 ตำแหน่งในแนวทแยง (Cross-pattern) ป้องกัน Die แตก',
+          tool: 'Spring Tension Driver',
+          strategy: 'Cross-Pattern Relief',
+          integrity: '100%',
+          force: '1.8 N',
+          forceW: '21%',
+          temp: '28.5 °C (Safe)',
+          tempW: '20%',
+          tempCls: 'bg-emerald-500',
+          offset: { x: 0, y: 1.5, z: -1.2 },
+        },
+        {
+          id: 5,
+          name: '5. เมนบอร์ดหลัก (Main PCB Motherboard)',
+          part: 'pcb',
+          desc: 'ปลดสายแพ Display/Keyboard ยกแผงวงจรพร้อมชิป SoC และ RAM ออกโดยไม่ดัดงอ',
+          tool: 'Dual Vacuum Array',
+          strategy: 'Zero-Bending Lift',
+          integrity: '100%',
+          force: '0.9 N',
+          forceW: '10%',
+          temp: '28.5 °C (Safe)',
+          tempW: '20%',
+          tempCls: 'bg-emerald-500',
+          offset: { x: 0, y: 0.7, z: 0 },
+        },
+        {
+          id: 6,
+          name: '6. ฝาครอบบน & คีย์บอร์ด (Top Casing)',
+          part: 'casing_top',
+          desc: 'ปลดสลัก Snap-fits รอบขอบตัวเครื่องด้วยแรงดันกดต่ำกว่าขีดจำกัดความเค้นคราก',
+          tool: 'Compliant Soft Pry',
+          strategy: 'Stress-Bound Release',
+          integrity: '100%',
+          force: '2.1 N',
+          forceW: '24%',
+          temp: '28.5 °C (Safe)',
+          tempW: '20%',
+          tempCls: 'bg-emerald-500',
+          offset: { x: 0, y: 2.5, z: 0 },
+        },
+      ];
 
-let currentExportType='ros';
+      const EXPORTS = {
+        ros: {
+          title: 'Export ROS MoveIt Plan',
+          subtitle: 'trajectory_plan.yaml',
+          filename: 'trajectory_plan.yaml',
+          ext: '.yaml',
+          get text() {
+            return `# DisassembleNet-3D — ROS MoveIt Trajectory Plan\n# Generated: ${new Date().toISOString()}\n# Device: Generic Laptop Assembly (TU Berlin Dataset)\n# Planner: POMDP + Contact-Graph DAG v2.4\n\nheader:\n  frame_id: "base_link"\n\nrobot_state:\n  joint_names: [joint1, joint2, joint3, joint4, joint5, joint6]\n  joint_positions: [0.0, -0.785, 1.571, -0.785, -1.571, 0.0]\n\ndisassembly_sequence:\n  - step: 1\n    name: "Bottom Casing"\n    tool: "TORX_BIT_M2"\n    strategy: "WIGGLE_REVERSE"\n    force_limit_N: 8.5\n    torque_profile: {freq_hz: 7.5, amplitude_Nm: 0.45}\n    safety_flags: []\n\n  - step: 2\n    name: "Li-ion Battery Pack"\n    tool: "COLD_SUCTION_SHEAR"\n    strategy: "BATTERY_SAFETY_INTERLOCK"\n    force_limit_N: 4.0\n    thermal_cutoff_mm: 50\n    safety_flags: [THERMAL_CUTOFF, VACUUM_ONLY]\n\n  - step: 3\n    name: "Cooling Fan"\n    tool: "SOFT_GRIPPER"\n    strategy: "RARE_EARTH_HARVEST"\n    force_limit_N: 3.0\n    safety_flags: []\n\n  - step: 4\n    name: "Copper Heat Pipe"\n    tool: "SPRING_TENSION_DRIVER"\n    strategy: "CROSS_PATTERN_RELIEF"\n    force_limit_N: 5.0\n    screw_pattern: "diagonal_4pt"\n    safety_flags: []\n\n  - step: 5\n    name: "Main PCB Motherboard"\n    tool: "DUAL_VACUUM_ARRAY"\n    strategy: "ZERO_BENDING_LIFT"\n    force_limit_N: 2.5\n    flex_cable_disconnect: true\n    safety_flags: [STATIC_GROUND]\n\n  - step: 6\n    name: "Top Casing & Keyboard"\n    tool: "COMPLIANT_SOFT_PRY"\n    strategy: "STRESS_BOUND_RELEASE"\n    force_limit_N: 6.0\n    snap_fit_points: 8\n    safety_flags: []\n\nlca_metrics:\n  economic_value_thb: 560.00\n  scrap_baseline_thb: 120.00\n  carbon_avoided_kg_co2e: 14.32\n  mci_score: 0.89\n  planning_time_s: 1.24\n  intact_recovery_pct: 95.2\n`;
+          },
+        },
+        gcode: {
+          title: 'Export G-Code Trajectory',
+          subtitle: 'disassembly_path.nc — 6-DOF CNC/Robot Controller',
+          filename: 'disassembly_path.nc',
+          ext: '.nc',
+          get text() {
+            return `; DisassembleNet-3D — G-Code Trajectory Plan\n; Generated: ${new Date().toISOString()}\n; Device: Generic Laptop Assembly\n; Units: mm | Forces: N\n\n%\nO0001 (DISASSEMBLENET_3D)\nN10 G21        ; Metric\nN20 G90        ; Absolute\nN30 G94        ; Feed per minute\n\n; STEP 1: Bottom Casing — Torx M2 Wiggle & Reverse\nN100 T01 M06\nN110 S750 M03\nN120 G00 Z5.0\nN130 G00 X0.0 Y-45.0\nN140 G01 Z-2.0 F80\nN150 M98 P9001   ; wiggle-reverse subroutine\nN160 G00 Z10.0\n\n; STEP 2: Battery Pack — Cold Suction (Thermal Interlock)\nN200 T02 M06\nN210 M87         ; THERMAL CUTOFF ARMED\nN220 G00 X-85.0 Y-28.0\nN230 G01 Z-2.0 F60\nN240 M88         ; VACUUM ON\nN250 G01 Z5.0 F40\nN260 M89         ; VACUUM OFF\nN270 G00 Z10.0\n\n; STEP 3: Cooling Fan — Soft Gripper\nN300 T03 M06\nN310 G00 X140.0 Y-26.0\nN320 G01 Z-1.5 F50\nN330 M91         ; GRIPPER CLOSE\nN340 G01 Z8.0 F60\nN350 G00 X300.0 Y0.0\n\n; STEP 4: Heat Pipe — Cross-Pattern 4-screw\nN400 T04 M06\nN410 G00 X30.0 Y-25.0\nN420 G01 Z-1.0 F70\nN430 M98 P9002\nN440 G00 Z10.0\n\n; STEP 5: Main PCB — Dual Vacuum Zero-Bending\nN500 T05 M06\nN510 M93         ; STATIC GROUND ON\nN520 G00 X0.0 Y-32.0\nN530 G01 Z-1.0 F40\nN540 M88\nN550 G01 Z15.0 F30\nN560 G00 X400.0 Y0.0\nN570 M89\n\n; STEP 6: Top Casing — Snap-fit Release\nN600 T06 M06\nN610 G00 X0.0 Y-12.0\nN620 G01 Z0.0 F50\nN630 M98 P9003\nN640 G00 Z20.0\n\nN9000 M30\n\nO9001 (WIGGLE_REVERSE)\n  G04 P200 M104 S750\n  G04 P300 M105 S500\n  G04 P300 M99\nO9002 (CROSS_4PT)\n  G00 X-15.0 Y-10.0 G01 Z-0.5 M98 P9001\n  G00 X15.0 Y10.0 G01 Z-0.5 M98 P9001\n  M99\nO9003 (SNAP_8PT) M99\n%\n`;
+          },
+        },
+        ar: {
+          title: 'WebAR Operator Guide',
+          subtitle: 'ar_guide_config.json — WebXR AR overlay config',
+          filename: 'ar_guide_config.json',
+          ext: '.json',
+          get text() {
+            return `{\n  "system": "DisassembleNet-3D WebAR Operator Guide",\n  "version": "2.4",\n  "generated": "${new Date().toISOString()}",\n  "device_requirements": {\n    "android": "Chrome 81+ (ARCore required)",\n    "ios": "Safari 16+ (LiDAR preferred)",\n    "web_api": "WebXR Device API + WebGL 2.0"\n  },\n  "ar_markers": [\n    {"step":1,"part":"casing_bottom","overlay_color":"#38bdf8","annotation":"ตำแหน่งน็อต Torx M2 (6 จุด) — หมุนทวนเข็มนาฬิกา","force_max_N":8.5},\n    {"step":2,"part":"battery","overlay_color":"#f59e0b","annotation":"BATTERY ZONE — Cold Suction เท่านั้น ห้ามความร้อน","thermal_cutoff_mm":50},\n    {"step":3,"part":"fan","overlay_color":"#10b981","annotation":"ปลดขั้ว 4-pin ก่อน แล้วดึงตัวใบพัดขึ้นตรงๆ"},\n    {"step":4,"part":"heatsink","overlay_color":"#f97316","annotation":"คลายสกรู 4 ตัวสลับทแยง ทีละ 1/4 รอบ"},\n    {"step":5,"part":"pcb","overlay_color":"#a78bfa","annotation":"ปลดสายแพ 3 เส้น ก่อนยกแผงตรงขึ้น ห้ามงอ"},\n    {"step":6,"part":"casing_top","overlay_color":"#38bdf8","annotation":"กดสลัก Snap-fit 8 จุดรอบขอบพร้อมกัน"}\n  ],\n  "lca_overlay": {\n    "value_recovered_thb": 560.00,\n    "carbon_kg_co2e": 14.32,\n    "mci_score": 0.89\n  }\n}\n`;
+          },
+        },
+      };
 
-function openExportModal(type){
-  currentExportType=type;
-  const d=EXPORTS[type];
-  document.getElementById('modalTitle').textContent=d.title;
-  document.getElementById('modalSubtitle').textContent=d.subtitle;
-  document.getElementById('modalContent').querySelector('pre').textContent=d.text;
-  document.getElementById('downloadBtnText').textContent='Download '+d.ext;
-  document.getElementById('exportModal').classList.add('active');
-  lucide.createIcons();
-}
-function closeExportModal(){document.getElementById('exportModal').classList.remove('active')}
-function copyModalContent(){
-  navigator.clipboard.writeText(EXPORTS[currentExportType].text).then(()=>showToast('Copied to clipboard'));
-}
-function downloadModalContent(){
-  const d=EXPORTS[currentExportType];
-  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([d.text],{type:'text/plain'})),download:d.filename});
-  a.click();
-  showToast('Downloaded '+d.filename);
-}
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
-}
+      let currentExportType = 'ros';
 
-function toggleLeft(){
-  const l=document.getElementById('leftSidebar'),r=document.getElementById('rightSidebar'),ov=document.getElementById('overlay');
-  const open=!l.classList.contains('open');
-  r.classList.remove('open');l.classList.toggle('open',open);ov.classList.toggle('active',open);
-}
-function toggleRight(){
-  const l=document.getElementById('leftSidebar'),r=document.getElementById('rightSidebar'),ov=document.getElementById('overlay');
-  const open=!r.classList.contains('open');
-  l.classList.remove('open');r.classList.toggle('open',open);ov.classList.toggle('active',open);
-}
-function closeSidebars(){
-  document.getElementById('leftSidebar').classList.remove('open');
-  document.getElementById('rightSidebar').classList.remove('open');
-  document.getElementById('overlay').classList.remove('active');
-}
+      function openExportModal(type) {
+        currentExportType = type;
+        const d = EXPORTS[type];
+        document.getElementById('modalTitle').textContent = d.title;
+        document.getElementById('modalSubtitle').textContent = d.subtitle;
+        document.getElementById('modalContent').querySelector('pre').textContent = d.text;
+        document.getElementById('downloadBtnText').textContent = 'Download ' + d.ext;
+        document.getElementById('exportModal').classList.add('active');
+        lucide.createIcons();
+      }
+      function closeExportModal() {
+        document.getElementById('exportModal').classList.remove('active');
+      }
+      function copyModalContent() {
+        navigator.clipboard.writeText(EXPORTS[currentExportType].text).then(() => showToast('Copied to clipboard'));
+      }
+      function downloadModalContent() {
+        const d = EXPORTS[currentExportType];
+        const a = Object.assign(document.createElement('a'), {
+          href: URL.createObjectURL(new Blob([d.text], { type: 'text/plain' })),
+          download: d.filename,
+        });
+        a.click();
+        showToast('Downloaded ' + d.filename);
+      }
+      function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+      }
 
-let scene,camera,renderer,controls,parts={},currentStepIndex=0,isAutoPlaying=false,autoTimer=null,isWireframe=false,isXray=false;
+      function toggleLeft() {
+        const l = document.getElementById('leftSidebar'),
+          r = document.getElementById('rightSidebar'),
+          ov = document.getElementById('overlay');
+        const open = !l.classList.contains('open');
+        r.classList.remove('open');
+        l.classList.toggle('open', open);
+        ov.classList.toggle('active', open);
+      }
+      function toggleRight() {
+        const l = document.getElementById('leftSidebar'),
+          r = document.getElementById('rightSidebar'),
+          ov = document.getElementById('overlay');
+        const open = !r.classList.contains('open');
+        l.classList.remove('open');
+        r.classList.toggle('open', open);
+        ov.classList.toggle('active', open);
+      }
+      function closeSidebars() {
+        document.getElementById('leftSidebar').classList.remove('open');
+        document.getElementById('rightSidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('active');
+      }
 
-function initThree(){
-  const c=document.getElementById('canvasContainer');
-  scene=new THREE.Scene();scene.background=new THREE.Color(0x08080a);
-  camera=new THREE.PerspectiveCamera(40,c.clientWidth/c.clientHeight,0.1,1000);
-  camera.position.set(6,4.5,7.5);
-  renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-  renderer.setSize(c.clientWidth,c.clientHeight);
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
-  c.appendChild(renderer.domElement);
-  controls=new THREE.OrbitControls(camera,renderer.domElement);
-  controls.enableDamping=true;controls.dampingFactor=0.05;
-  controls.maxPolarAngle=Math.PI/2+0.15;controls.minDistance=3;controls.maxDistance=22;
-  scene.add(new THREE.AmbientLight(0xffffff,0.85));
-  const ml=new THREE.DirectionalLight(0xffffff,1.8);
-  ml.position.set(6,12,8);ml.castShadow=true;ml.shadow.mapSize.set(2048,2048);scene.add(ml);
-  const fl=new THREE.DirectionalLight(0x38bdf8,0.7);fl.position.set(-6,4,-4);scene.add(fl);
-  const rl=new THREE.DirectionalLight(0x60a5fa,0.5);rl.position.set(0,-6,-4);scene.add(rl);
-  const grid=new THREE.GridHelper(16,24,0x27272a,0x18181b);grid.position.y=-2;scene.add(grid);
-  const sp=new THREE.Mesh(new THREE.PlaneGeometry(16,16),new THREE.ShadowMaterial({opacity:0.35}));
-  sp.rotation.x=-Math.PI/2;sp.position.y=-2.001;sp.receiveShadow=true;scene.add(sp);
-  buildModels();renderStepList();setupRaycaster();animate();
-  window.addEventListener('resize',()=>{
-    camera.aspect=c.clientWidth/c.clientHeight;
-    camera.updateProjectionMatrix();renderer.setSize(c.clientWidth,c.clientHeight);
-  });
-}
+      let scene,
+        camera,
+        renderer,
+        controls,
+        parts = {},
+        currentStepIndex = 0,
+        isAutoPlaying = false,
+        autoTimer = null,
+        isWireframe = false,
+        isXray = false;
 
-function addPart(key,geo,mat,x,y,z){
-  const m=new THREE.Mesh(geo,mat);
-  m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;
-  parts[key]={mesh:m,originalPos:new THREE.Vector3(x,y,z),targetPos:new THREE.Vector3(x,y,z),mat};
-  return m;
-}
+      function initThree() {
+        const c = document.getElementById('canvasContainer');
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x08080a);
+        camera = new THREE.PerspectiveCamera(40, c.clientWidth / c.clientHeight, 0.1, 1000);
+        camera.position.set(6, 4.5, 7.5);
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(c.clientWidth, c.clientHeight);
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
+        c.appendChild(renderer.domElement);
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 + 0.15;
+        controls.minDistance = 3;
+        controls.maxDistance = 22;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+        const ml = new THREE.DirectionalLight(0xffffff, 1.8);
+        ml.position.set(6, 12, 8);
+        ml.castShadow = true;
+        ml.shadow.mapSize.set(2048, 2048);
+        scene.add(ml);
+        const fl = new THREE.DirectionalLight(0x38bdf8, 0.7);
+        fl.position.set(-6, 4, -4);
+        scene.add(fl);
+        const rl = new THREE.DirectionalLight(0x60a5fa, 0.5);
+        rl.position.set(0, -6, -4);
+        scene.add(rl);
+        const grid = new THREE.GridHelper(16, 24, 0x27272a, 0x18181b);
+        grid.position.y = -2;
+        scene.add(grid);
+        const sp = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), new THREE.ShadowMaterial({ opacity: 0.35 }));
+        sp.rotation.x = -Math.PI / 2;
+        sp.position.y = -2.001;
+        sp.receiveShadow = true;
+        scene.add(sp);
+        buildModels();
+        renderStepList();
+        setupRaycaster();
+        animate();
+        window.addEventListener('resize', () => {
+          camera.aspect = c.clientWidth / c.clientHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(c.clientWidth, c.clientHeight);
+        });
+      }
 
-function buildModels(){
-  const asm=new THREE.Group();
-  asm.add(addPart('casing_bottom',new THREE.BoxGeometry(4.4,.18,3),new THREE.MeshStandardMaterial({color:0x27272a,metalness:.6,roughness:.35}),0,-.45,0));
-  asm.add(addPart('battery',new THREE.BoxGeometry(2.3,.1,1.2),new THREE.MeshStandardMaterial({color:0x18181b,metalness:.8,roughness:.25}),-.85,-.28,.65));
-  asm.add(addPart('fan',new THREE.CylinderGeometry(.55,.55,.14,32),new THREE.MeshStandardMaterial({color:0xd97706,metalness:.4,roughness:.3}),1.4,-.26,-.75));
-  asm.add(addPart('heatsink',new THREE.BoxGeometry(1.8,.08,.9),new THREE.MeshStandardMaterial({color:0xb45309,metalness:.95,roughness:.15}),.3,-.25,-.65));
-  const pcbG=new THREE.Group();
-  const pcbMat=new THREE.MeshStandardMaterial({color:0x064e3b,metalness:.2,roughness:.6});
-  const pcbM=new THREE.Mesh(new THREE.BoxGeometry(4,.06,2.6),pcbMat);pcbM.castShadow=true;pcbG.add(pcbM);
-  const soc=new THREE.Mesh(new THREE.BoxGeometry(.7,.03,.7),new THREE.MeshStandardMaterial({color:0x09090b,metalness:.9,roughness:.1}));
-  soc.position.set(.3,.045,-.65);pcbG.add(soc);
-  pcbG.position.y=-.32;
-  parts['pcb']={mesh:pcbG,originalPos:new THREE.Vector3(0,-.32,0),targetPos:new THREE.Vector3(0,-.32,0),mat:pcbMat};
-  asm.add(pcbG);
-  asm.add(addPart('casing_top',new THREE.BoxGeometry(4.4,.16,3),new THREE.MeshStandardMaterial({color:0x1e1e24,metalness:.5,roughness:.4}),0,-.12,0));
-  scene.add(asm);
-}
+      function addPart(key, geo, mat, x, y, z) {
+        const m = new THREE.Mesh(geo, mat);
+        m.position.set(x, y, z);
+        m.castShadow = true;
+        m.receiveShadow = true;
+        parts[key] = { mesh: m, originalPos: new THREE.Vector3(x, y, z), targetPos: new THREE.Vector3(x, y, z), mat };
+        return m;
+      }
 
-function renderStepList(){
-  const list=document.getElementById('stepList');
-  list.innerHTML='';
-  stepsData.forEach((s,i)=>{
-    const act=i===currentStepIndex,past=i<currentStepIndex;
-    const div=document.createElement('div');
-    div.className=`p-2.5 rounded-lg border transition-all cursor-pointer select-none ${act?'bg-cyan-500/10 border-cyan-500/50':past?'bg-zinc-900/30 border-white/[0.04] opacity-50 hover:opacity-80':'bg-zinc-900/60 border-white/[0.05] hover:border-white/10'}`;
-    div.onclick=()=>{selectStep(i);closeSidebars()};
-    div.innerHTML=`<div class="flex items-center justify-between text-xs"><span class="font-medium ${act?'text-cyan-400 font-bold':'text-zinc-300'}">${s.name}</span><span class="text-[10px] font-mono ${past?'text-emerald-400':act?'text-cyan-400 font-bold':'text-zinc-500'}">${past?'DONE':act?'ACTIVE':'QUEUED'}</span></div><div class="text-[11px] text-zinc-400 mt-1 line-clamp-1">${s.desc}</div>`;
-    list.appendChild(div);
-  });
-}
+      function buildModels() {
+        const asm = new THREE.Group();
+        asm.add(
+          addPart(
+            'casing_bottom',
+            new THREE.BoxGeometry(4.4, 0.18, 3),
+            new THREE.MeshStandardMaterial({ color: 0x27272a, metalness: 0.6, roughness: 0.35 }),
+            0,
+            -0.45,
+            0,
+          ),
+        );
+        asm.add(
+          addPart(
+            'battery',
+            new THREE.BoxGeometry(2.3, 0.1, 1.2),
+            new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.8, roughness: 0.25 }),
+            -0.85,
+            -0.28,
+            0.65,
+          ),
+        );
+        asm.add(
+          addPart(
+            'fan',
+            new THREE.CylinderGeometry(0.55, 0.55, 0.14, 32),
+            new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.4, roughness: 0.3 }),
+            1.4,
+            -0.26,
+            -0.75,
+          ),
+        );
+        asm.add(
+          addPart(
+            'heatsink',
+            new THREE.BoxGeometry(1.8, 0.08, 0.9),
+            new THREE.MeshStandardMaterial({ color: 0xb45309, metalness: 0.95, roughness: 0.15 }),
+            0.3,
+            -0.25,
+            -0.65,
+          ),
+        );
+        const pcbG = new THREE.Group();
+        const pcbMat = new THREE.MeshStandardMaterial({ color: 0x064e3b, metalness: 0.2, roughness: 0.6 });
+        const pcbM = new THREE.Mesh(new THREE.BoxGeometry(4, 0.06, 2.6), pcbMat);
+        pcbM.castShadow = true;
+        pcbG.add(pcbM);
+        const soc = new THREE.Mesh(
+          new THREE.BoxGeometry(0.7, 0.03, 0.7),
+          new THREE.MeshStandardMaterial({ color: 0x09090b, metalness: 0.9, roughness: 0.1 }),
+        );
+        soc.position.set(0.3, 0.045, -0.65);
+        pcbG.add(soc);
+        pcbG.position.y = -0.32;
+        parts['pcb'] = {
+          mesh: pcbG,
+          originalPos: new THREE.Vector3(0, -0.32, 0),
+          targetPos: new THREE.Vector3(0, -0.32, 0),
+          mat: pcbMat,
+        };
+        asm.add(pcbG);
+        asm.add(
+          addPart(
+            'casing_top',
+            new THREE.BoxGeometry(4.4, 0.16, 3),
+            new THREE.MeshStandardMaterial({ color: 0x1e1e24, metalness: 0.5, roughness: 0.4 }),
+            0,
+            -0.12,
+            0,
+          ),
+        );
+        scene.add(asm);
+      }
 
-function selectStep(i){
-  currentStepIndex=i;const d=stepsData[i];
-  document.getElementById('currentStepBadge').textContent=`STEP ${d.id} / 6`;
-  document.getElementById('currentStepTitle').textContent=d.name.split('. ').slice(1).join('. ');
-  document.getElementById('currentStepDesc').textContent=d.desc;
-  document.getElementById('currentTool').textContent=d.tool;
-  document.getElementById('currentStrategy').textContent=d.strategy;
-  document.getElementById('currentIntegrity').textContent=d.integrity;
-  document.getElementById('forceDisplay').textContent=`${d.force} / 8.5 N`;
-  document.getElementById('forceBar').style.width=d.forceW;
-  document.getElementById('tempDisplay').textContent=d.temp;
-  const tb=document.getElementById('tempBar');tb.style.width=d.tempW;
-  tb.className=`${d.tempCls} h-full transition-all duration-500`;
-  stepsData.forEach((s,idx)=>{
-    const p=parts[s.part];if(!p)return;
-    if(idx<=i)p.targetPos.set(p.originalPos.x+s.offset.x,p.originalPos.y+s.offset.y,p.originalPos.z+s.offset.z);
-    else p.targetPos.copy(p.originalPos);
-  });
-  const pct=Math.round(i/(stepsData.length-1)*100);
-  document.getElementById('explodeSlider').value=pct;
-  document.getElementById('explodePercent').textContent=pct+'%';
-  renderStepList();
-}
+      function renderStepList() {
+        const list = document.getElementById('stepList');
+        list.innerHTML = '';
+        stepsData.forEach((s, i) => {
+          const act = i === currentStepIndex,
+            past = i < currentStepIndex;
+          const div = document.createElement('div');
+          div.className = `p-2.5 rounded-lg border transition-all cursor-pointer select-none ${act ? 'bg-cyan-500/10 border-cyan-500/50' : past ? 'bg-zinc-900/30 border-white/[0.04] opacity-50 hover:opacity-80' : 'bg-zinc-900/60 border-white/[0.05] hover:border-white/10'}`;
+          div.onclick = () => {
+            selectStep(i);
+            closeSidebars();
+          };
+          div.innerHTML = `<div class="flex items-center justify-between text-xs"><span class="font-medium ${act ? 'text-cyan-400 font-bold' : 'text-zinc-300'}">${s.name}</span><span class="text-[10px] font-mono ${past ? 'text-emerald-400' : act ? 'text-cyan-400 font-bold' : 'text-zinc-500'}">${past ? 'DONE' : act ? 'ACTIVE' : 'QUEUED'}</span></div><div class="text-[11px] text-zinc-400 mt-1 line-clamp-1">${s.desc}</div>`;
+          list.appendChild(div);
+        });
+      }
 
-function onExplodeSlider(v){
-  const f=v/100;document.getElementById('explodePercent').textContent=v+'%';
-  stepsData.forEach(s=>{const p=parts[s.part];if(p)p.targetPos.set(p.originalPos.x+s.offset.x*f,p.originalPos.y+s.offset.y*f,p.originalPos.z+s.offset.z*f)});
-}
+      function selectStep(i) {
+        currentStepIndex = i;
+        const d = stepsData[i];
+        document.getElementById('currentStepBadge').textContent = `STEP ${d.id} / 6`;
+        document.getElementById('currentStepTitle').textContent = d.name.split('. ').slice(1).join('. ');
+        document.getElementById('currentStepDesc').textContent = d.desc;
+        document.getElementById('currentTool').textContent = d.tool;
+        document.getElementById('currentStrategy').textContent = d.strategy;
+        document.getElementById('currentIntegrity').textContent = d.integrity;
+        document.getElementById('forceDisplay').textContent = `${d.force} / 8.5 N`;
+        document.getElementById('forceBar').style.width = d.forceW;
+        document.getElementById('tempDisplay').textContent = d.temp;
+        const tb = document.getElementById('tempBar');
+        tb.style.width = d.tempW;
+        tb.className = `${d.tempCls} h-full transition-all duration-500`;
+        stepsData.forEach((s, idx) => {
+          const p = parts[s.part];
+          if (!p) return;
+          if (idx <= i)
+            p.targetPos.set(p.originalPos.x + s.offset.x, p.originalPos.y + s.offset.y, p.originalPos.z + s.offset.z);
+          else p.targetPos.copy(p.originalPos);
+        });
+        const pct = Math.round((i / (stepsData.length - 1)) * 100);
+        document.getElementById('explodeSlider').value = pct;
+        document.getElementById('explodePercent').textContent = pct + '%';
+        renderStepList();
+      }
 
-function triggerAutoPlay(){
-  if(isAutoPlaying){clearInterval(autoTimer);isAutoPlaying=false;document.getElementById('playBtnText').textContent='Auto Sequence';document.getElementById('playBtn').classList.remove('opacity-60');return}
-  isAutoPlaying=true;document.getElementById('playBtnText').textContent='Stop';document.getElementById('playBtn').classList.add('opacity-60');
-  resetAssembly();let i=0;
-  autoTimer=setInterval(()=>{selectStep(i);i++;if(i>=stepsData.length){clearInterval(autoTimer);isAutoPlaying=false;document.getElementById('playBtnText').textContent='Auto Sequence';document.getElementById('playBtn').classList.remove('opacity-60')}},1400);
-}
+      function onExplodeSlider(v) {
+        const f = v / 100;
+        document.getElementById('explodePercent').textContent = v + '%';
+        stepsData.forEach((s) => {
+          const p = parts[s.part];
+          if (p)
+            p.targetPos.set(
+              p.originalPos.x + s.offset.x * f,
+              p.originalPos.y + s.offset.y * f,
+              p.originalPos.z + s.offset.z * f,
+            );
+        });
+      }
 
-function resetAssembly(){
-  if(autoTimer)clearInterval(autoTimer);autoTimer=null;isAutoPlaying=false;
-  document.getElementById('playBtnText').textContent='Auto Sequence';
-  document.getElementById('playBtn').classList.remove('opacity-60','pointer-events-none');
-  document.getElementById('explodeSlider').value=0;document.getElementById('explodePercent').textContent='0%';
-  stepsData.forEach(s=>{const p=parts[s.part];if(p)p.targetPos.copy(p.originalPos)});
-  selectStep(0);
-}
+      function triggerAutoPlay() {
+        if (isAutoPlaying) {
+          clearInterval(autoTimer);
+          isAutoPlaying = false;
+          document.getElementById('playBtnText').textContent = 'Auto Sequence';
+          document.getElementById('playBtn').classList.remove('opacity-60');
+          return;
+        }
+        isAutoPlaying = true;
+        document.getElementById('playBtnText').textContent = 'Stop';
+        document.getElementById('playBtn').classList.add('opacity-60');
+        resetAssembly();
+        let i = 0;
+        autoTimer = setInterval(() => {
+          selectStep(i);
+          i++;
+          if (i >= stepsData.length) {
+            clearInterval(autoTimer);
+            isAutoPlaying = false;
+            document.getElementById('playBtnText').textContent = 'Auto Sequence';
+            document.getElementById('playBtn').classList.remove('opacity-60');
+          }
+        }, 1400);
+      }
 
-function toggleWireframe(){isWireframe=!isWireframe;Object.values(parts).forEach(p=>{if(p.mat)p.mat.wireframe=isWireframe});document.getElementById('wireframeBtn').classList.toggle('text-cyan-400',isWireframe)}
-function toggleXray(){isXray=!isXray;Object.values(parts).forEach(p=>{if(p.mat){p.mat.transparent=isXray;p.mat.opacity=isXray?.3:1;p.mat.depthWrite=!isXray}});document.getElementById('xrayBtn').classList.toggle('text-cyan-400',isXray)}
-function setCameraView(v){const p={iso:[6,4.5,7.5],top:[0,10,.01],front:[0,0,9]}[v];if(p)camera.position.set(...p);controls.target.set(0,0,0);controls.update()}
+      function resetAssembly() {
+        if (autoTimer) clearInterval(autoTimer);
+        autoTimer = null;
+        isAutoPlaying = false;
+        document.getElementById('playBtnText').textContent = 'Auto Sequence';
+        document.getElementById('playBtn').classList.remove('opacity-60', 'pointer-events-none');
+        document.getElementById('explodeSlider').value = 0;
+        document.getElementById('explodePercent').textContent = '0%';
+        stepsData.forEach((s) => {
+          const p = parts[s.part];
+          if (p) p.targetPos.copy(p.originalPos);
+        });
+        selectStep(0);
+      }
 
-function setupRaycaster(){
-  const rc=new THREE.Raycaster(),ptr=new THREE.Vector2();
-  function hit(cx,cy){
-    const c=document.getElementById('canvasContainer'),r=c.getBoundingClientRect();
-    ptr.x=((cx-r.left)/r.width)*2-1;ptr.y=-((cy-r.top)/r.height)*2+1;
-    rc.setFromCamera(ptr,camera);
-    const meshes=[];Object.values(parts).forEach(p=>p.mesh.traverse(ch=>{if(ch.isMesh)meshes.push(ch)}));
-    const hits=rc.intersectObjects(meshes,false);
-    if(!hits.length)return;
-    let obj=hits[0].object;
-    while(obj&&obj!==scene){const k=Object.keys(parts).find(k=>parts[k].mesh===obj||parts[k].mesh===obj.parent);if(k){const idx=stepsData.findIndex(s=>s.part===k);if(idx!==-1)selectStep(idx);return}obj=obj.parent}
-  }
-  let drag=false,md={x:0,y:0};
-  const cv=renderer.domElement;
-  cv.addEventListener('mousedown',e=>{md={x:e.clientX,y:e.clientY};drag=false});
-  cv.addEventListener('mousemove',e=>{if(Math.abs(e.clientX-md.x)+Math.abs(e.clientY-md.y)>5)drag=true});
-  cv.addEventListener('mouseup',e=>{if(!drag)hit(e.clientX,e.clientY)});
-  let ts=null;
-  cv.addEventListener('touchstart',e=>{ts={x:e.touches[0].clientX,y:e.touches[0].clientY}},{passive:true});
-  cv.addEventListener('touchend',e=>{if(!ts)return;const t=e.changedTouches[0];if(Math.abs(t.clientX-ts.x)+Math.abs(t.clientY-ts.y)<10)hit(t.clientX,t.clientY);ts=null},{passive:true});
-}
+      function toggleWireframe() {
+        isWireframe = !isWireframe;
+        Object.values(parts).forEach((p) => {
+          if (p.mat) p.mat.wireframe = isWireframe;
+        });
+        document.getElementById('wireframeBtn').classList.toggle('text-cyan-400', isWireframe);
+      }
+      function toggleXray() {
+        isXray = !isXray;
+        Object.values(parts).forEach((p) => {
+          if (p.mat) {
+            p.mat.transparent = isXray;
+            p.mat.opacity = isXray ? 0.3 : 1;
+            p.mat.depthWrite = !isXray;
+          }
+        });
+        document.getElementById('xrayBtn').classList.toggle('text-cyan-400', isXray);
+      }
+      function setCameraView(v) {
+        const p = { iso: [6, 4.5, 7.5], top: [0, 10, 0.01], front: [0, 0, 9] }[v];
+        if (p) camera.position.set(...p);
+        controls.target.set(0, 0, 0);
+        controls.update();
+      }
 
-function animate(){requestAnimationFrame(animate);controls.update();Object.values(parts).forEach(p=>p.mesh.position.lerp(p.targetPos,.07));renderer.render(scene,camera)}
+      function setupRaycaster() {
+        const rc = new THREE.Raycaster(),
+          ptr = new THREE.Vector2();
+        function hit(cx, cy) {
+          const c = document.getElementById('canvasContainer'),
+            r = c.getBoundingClientRect();
+          ptr.x = ((cx - r.left) / r.width) * 2 - 1;
+          ptr.y = -((cy - r.top) / r.height) * 2 + 1;
+          rc.setFromCamera(ptr, camera);
+          const meshes = [];
+          Object.values(parts).forEach((p) =>
+            p.mesh.traverse((ch) => {
+              if (ch.isMesh) meshes.push(ch);
+            }),
+          );
+          const hits = rc.intersectObjects(meshes, false);
+          if (!hits.length) return;
+          let obj = hits[0].object;
+          while (obj && obj !== scene) {
+            const k = Object.keys(parts).find((k) => parts[k].mesh === obj || parts[k].mesh === obj.parent);
+            if (k) {
+              const idx = stepsData.findIndex((s) => s.part === k);
+              if (idx !== -1) selectStep(idx);
+              return;
+            }
+            obj = obj.parent;
+          }
+        }
+        let drag = false,
+          md = { x: 0, y: 0 };
+        const cv = renderer.domElement;
+        cv.addEventListener('mousedown', (e) => {
+          md = { x: e.clientX, y: e.clientY };
+          drag = false;
+        });
+        cv.addEventListener('mousemove', (e) => {
+          if (Math.abs(e.clientX - md.x) + Math.abs(e.clientY - md.y) > 5) drag = true;
+        });
+        cv.addEventListener('mouseup', (e) => {
+          if (!drag) hit(e.clientX, e.clientY);
+        });
+        let ts = null;
+        cv.addEventListener(
+          'touchstart',
+          (e) => {
+            ts = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          },
+          { passive: true },
+        );
+        cv.addEventListener(
+          'touchend',
+          (e) => {
+            if (!ts) return;
+            const t = e.changedTouches[0];
+            if (Math.abs(t.clientX - ts.x) + Math.abs(t.clientY - ts.y) < 10) hit(t.clientX, t.clientY);
+            ts = null;
+          },
+          { passive: true },
+        );
+      }
 
-window.onload=()=>{initThree();lucide.createIcons();selectStep(0)};
-<\/script>
-</body>
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        Object.values(parts).forEach((p) => p.mesh.position.lerp(p.targetPos, 0.07));
+        renderer.render(scene, camera);
+      }
+
+      window.onload = () => {
+        initThree();
+        lucide.createIcons();
+        selectStep(0);
+      };
+    </script>
+  </body>
 </html>
